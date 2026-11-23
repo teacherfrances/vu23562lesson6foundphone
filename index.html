@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lost Phone L6">
+<meta name="theme-color" content="#000000">
+<title>The lost phone · Lesson 6</title>
+<style>
+:root { --fs: 28px; --blue: #0a7aff; --green: #1f9d47; --red: #e5332a; --ink: #1c1c1e; --grey: #6c6c70; --line: #d1d1d6; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; background: #1c1c1e; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+button { font: inherit; color: inherit; cursor: pointer; }
+.phone { position: relative; width: 100vw; height: 100vh; height: 100dvh; overflow: hidden; background: #000; color: #fff; }
+@media (min-width: 640px) and (min-height: 720px) {
+  body { display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 30% 20%, #2c3e35, #121614 70%); }
+  .phone { width: 430px; height: min(920px, calc(100vh - 32px)); border-radius: 56px; border: 12px solid #0b0b0c; box-shadow: 0 0 0 2px #3a3a3c, 0 30px 80px rgba(0,0,0,.6); }
+  .island { display: block !important; }
+}
+.island { display: none; position: absolute; top: 9px; left: 50%; transform: translateX(-50%); width: 112px; height: 30px; background: #000; border-radius: 20px; z-index: 60; }
+
+/* status bar */
+.sb { position: absolute; top: 0; left: 0; right: 0; height: 48px; padding: 0 18px 0 26px; display: flex; align-items: center; justify-content: space-between; z-index: 50; font-weight: 600; font-size: 17px; color: #fff; pointer-events: none; }
+.phone.light .sb { color: #000; }
+.sb .r { display: flex; align-items: center; gap: 6px; pointer-events: auto; }
+.sb svg { display: block; }
+.fsbtn { background: none; border: 0; padding: 6px; margin-left: 2px; border-radius: 8px; display: flex; color: inherit; min-width: 40px; min-height: 40px; align-items: center; justify-content: center; }
+.fsbtn:active { background: rgba(127,127,127,.25); }
+
+.scr { position: absolute; inset: 0; display: flex; flex-direction: column; }
+
+/* wallpapers */
+.wall { background: radial-gradient(ellipse at 20% 10%, rgba(255,255,255,.18) 0 2px, transparent 3px) 0 0/90px 110px, radial-gradient(ellipse at 70% 60%, rgba(255,255,255,.14) 0 1.5px, transparent 2.5px) 0 0/70px 80px, linear-gradient(165deg, #0e3b2c 0%, #145a3f 45%, #7a1c22 100%); }
+
+/* intro */
+.intro { padding: 70px 22px 24px; overflow: auto; align-items: center; }
+.card { background: rgba(255,255,255,.96); color: var(--ink); border-radius: 26px; padding: 22px 20px; width: 100%; max-width: 520px; box-shadow: 0 12px 40px rgba(0,0,0,.35); }
+.intro .big { font-size: 64px; text-align: center; line-height: 1.1; }
+.intro h1 { font-size: calc(var(--fs) * 1.25); margin: 8px 0 2px; text-align: center; }
+.intro .sub { text-align: center; color: var(--grey); font-size: max(17px, calc(var(--fs) * .62)); margin-bottom: 14px; }
+.intro p { font-size: var(--fs); line-height: 1.35; margin: 0 0 12px; }
+.btn { display: block; width: 100%; border: 0; border-radius: 16px; padding: .5em .7em; font-size: var(--fs); font-weight: 700; background: var(--blue); color: #fff; margin-top: 10px; min-height: 62px; }
+.btn.alt { background: #e5e5ea; color: var(--ink); }
+.btn.green { background: var(--green); }
+.btn.warn { background: #fff0d6; color: #7a4a00; }
+.wb { background: #eaf6ee; border: 2px solid #9fd8b0; border-radius: 18px; padding: 14px; margin-bottom: 14px; }
+.wb b { font-size: var(--fs); }
+.wb p { margin: 6px 0 0; }
+.warnbox { background: #fff4e0; border: 2px solid #f0c27a; border-radius: 14px; padding: 10px 12px; font-size: max(18px, calc(var(--fs) * .7)); color: #6b4300; margin-bottom: 12px; }
+
+/* lock */
+.lock { align-items: center; padding-top: 70px; overflow: auto; }
+.lock .date { font-size: 21px; font-weight: 600; opacity: .9; margin-top: 6px; }
+.lock .clock { font-size: 88px; font-weight: 300; letter-spacing: -2px; line-height: 1; margin: 2px 0 18px; }
+.notes { width: 100%; padding: 0 12px; display: flex; flex-direction: column; gap: 10px; }
+.noti { background: rgba(240,240,245,.82); color: #000; border-radius: 20px; padding: 12px 14px; display: flex; gap: 12px; align-items: flex-start; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+.noti .ni { width: 38px; height: 38px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex: none; }
+.noti .nt { flex: 1; min-width: 0; }
+.noti .nh { display: flex; justify-content: space-between; font-weight: 700; font-size: 17px; }
+.noti .nh span { font-weight: 400; color: #555; font-size: 15px; }
+.noti .nb { font-size: max(18px, calc(var(--fs) * .7)); line-height: 1.3; }
+.unlock { margin: 22px auto 30px; background: rgba(255,255,255,.22); border: 0; color: #fff; border-radius: 30px; padding: 14px 28px; font-size: 21px; font-weight: 600; min-height: 56px; backdrop-filter: blur(10px); }
+.pass { align-items: center; padding-top: 80px; background: rgba(0,0,0,.35); }
+.pass h2 { font-weight: 500; font-size: 23px; margin: 0 0 18px; }
+.dots { display: flex; gap: 20px; margin-bottom: 26px; }
+.dots i { width: 15px; height: 15px; border-radius: 50%; border: 2px solid #fff; display: block; }
+.dots i.on { background: #fff; }
+.dots.shake { animation: shake .4s; }
+@keyframes shake { 20%,60% { transform: translateX(-10px); } 40%,80% { transform: translateX(10px); } }
+.keys { display: grid; grid-template-columns: repeat(3, 84px); gap: 16px 26px; }
+.key { width: 84px; height: 84px; border-radius: 50%; border: 0; background: rgba(255,255,255,.22); color: #fff; font-size: 36px; font-weight: 400; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
+.key small { font-size: 11px; letter-spacing: 2px; font-weight: 700; margin-top: 2px; }
+.key.txt { background: none; font-size: 19px; font-weight: 600; }
+.key:active { background: rgba(255,255,255,.5); }
+.sticky { margin-top: 18px; background: #ffe680; color: #3a3000; padding: 12px 16px; border-radius: 4px; transform: rotate(-2deg); font-size: max(19px, calc(var(--fs) * .72)); max-width: 300px; box-shadow: 0 6px 16px rgba(0,0,0,.3); font-weight: 600; text-align: center; }
+.passback { margin-top: 14px; background: none; border: 0; color: #fff; font-size: 18px; text-decoration: underline; min-height: 44px; }
+
+/* home */
+.home { padding: 52px 0 0; }
+.hscroll { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 16px 16px; -webkit-overflow-scrolling: touch; }
+.widget { background: rgba(255,255,255,.88); color: #000; border-radius: 24px; padding: 14px 16px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+.widget .wt { font-weight: 800; font-size: max(18px, calc(var(--fs) * .7)); }
+.widget .ws { color: #3a3a3c; font-size: max(17px, calc(var(--fs) * .6)); margin: 2px 0 8px; }
+.bar { height: 12px; background: #e0e0e5; border-radius: 6px; overflow: hidden; }
+.bar span { display: block; height: 100%; background: linear-gradient(90deg, #1f9d47, #e5332a); border-radius: 6px; }
+.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 8px; margin-top: 18px; }
+.app { background: none; border: 0; color: #fff; display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; padding: 0; min-height: 44px; }
+.ico { width: 64px; height: 64px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 34px; box-shadow: 0 3px 8px rgba(0,0,0,.25); position: relative; }
+.app .lab { font-size: 14px; font-weight: 600; text-shadow: 0 1px 3px rgba(0,0,0,.7); line-height: 1.15; text-align: center; }
+.app.locked .ico { filter: grayscale(1) brightness(.6); }
+.badge { position: absolute; top: -6px; right: -6px; min-width: 24px; height: 24px; border-radius: 12px; background: var(--red); color: #fff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 6px; border: 2px solid rgba(0,0,0,.2); }
+.badge.done { background: var(--green); }
+.badge.lk { background: #3a3a3c; font-size: 12px; }
+.app.next .ico { animation: pulse 1.6s infinite; }
+@keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); box-shadow: 0 0 0 6px rgba(255,255,255,.35); } }
+.dock { flex: none; margin: 6px 12px 14px; height: 92px; border-radius: 30px; background: rgba(255,255,255,.25); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); display: flex; justify-content: space-around; align-items: center; }
+
+/* app */
+.phone.light { background: #f2f2f7; }
+.appv { background: #f2f2f7; color: var(--ink); padding-top: 48px; }
+.ahead { display: flex; align-items: center; justify-content: space-between; padding: 4px 8px 8px; background: #f8f8fa; border-bottom: 1px solid var(--line); gap: 6px; }
+.ahead .back { background: none; border: 0; color: var(--blue); font-size: 19px; padding: 8px; min-height: 48px; min-width: 76px; text-align: left; }
+.ahead .t { font-weight: 700; font-size: 19px; display: flex; align-items: center; gap: 8px; min-width: 0; }
+.ahead .t .mi { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex: none; }
+.ahead .aa { background: #e5e5ea; border: 0; border-radius: 12px; font-weight: 700; font-size: 19px; min-width: 56px; min-height: 48px; }
+.split { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.ptop { flex: 1 1 50%; overflow-y: auto; overflow-x: hidden; background: #fff; padding: 14px; min-height: 0; position: relative; -webkit-overflow-scrolling: touch; }
+.grip { height: 10px; background: #e5e5ea; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); position: relative; flex: none; }
+.grip::after { content: ""; position: absolute; left: 50%; top: 3px; width: 44px; height: 4px; margin-left: -22px; background: #b0b0b6; border-radius: 2px; }
+.pq { flex: 1 1 50%; overflow-y: auto; overflow-x: hidden; padding: 12px 14px 22px; min-height: 0; -webkit-overflow-scrolling: touch; }
+.qh { display: flex; justify-content: space-between; align-items: center; color: var(--grey); font-size: max(16px, calc(var(--fs) * .6)); font-weight: 600; margin-bottom: 6px; gap: 8px; }
+.qd { display: flex; gap: 4px; flex-wrap: wrap; }
+.qd i { width: 10px; height: 10px; border-radius: 50%; background: #c7c7cc; display: block; }
+.qd i.ok { background: var(--green); }
+.qd i.cur { background: var(--blue); }
+.prompt { font-size: var(--fs); font-weight: 600; line-height: 1.3; margin: 2px 0 10px; }
+.opt { display: flex; align-items: center; gap: .45em; width: 100%; text-align: left; background: #fff; border: 2px solid var(--line); border-radius: 16px; padding: .4em .55em; margin: 0 0 .4em; font-size: var(--fs); line-height: 1.25; color: var(--ink); min-height: 64px; }
+.opt .lt { flex: none; width: 1.35em; height: 1.35em; border-radius: 50%; background: #e5e5ea; color: #3a3a3c; font-size: .75em; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.opt.right { background: #dcf5e3; border-color: #34c759; }
+.opt.right .lt { background: #34c759; color: #fff; }
+.opt.wrong { background: #fde4e3; border-color: #ff3b30; opacity: .75; }
+.opt.wrong .lt { background: #ff3b30; color: #fff; }
+.opt:disabled { cursor: default; }
+.row3 { display: flex; gap: 8px; flex-wrap: wrap; }
+.row3 .opt { flex: 1 1 0; justify-content: center; text-align: center; min-width: 6.2em; }
+.syl { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.syl .opt { width: auto; min-width: 2.6em; justify-content: center; font-weight: 700; font-size: calc(var(--fs) * 1.15); }
+.line { min-height: 70px; border: 2px dashed #a8a8ae; border-radius: 16px; padding: 8px; display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; background: #fff; }
+.line .ph { color: #8e8e93; font-size: max(17px, calc(var(--fs) * .65)); padding: 6px; }
+.chip { background: #fff; border: 2px solid #0a7aff; color: #0058c4; border-radius: 14px; padding: .35em .55em; font-size: var(--fs); text-align: left; min-height: 58px; }
+.line .chip { background: #e8f1ff; }
+.chip.used { visibility: hidden; }
+.bank { display: flex; flex-direction: column; gap: 8px; }
+.two { display: flex; gap: 8px; margin-top: 10px; }
+.two .btn { margin-top: 0; }
+.tapnote { font-size: max(18px, calc(var(--fs) * .75)); color: #0058c4; background: #e8f1ff; border-radius: 14px; padding: 10px 12px; }
+.fb { border-radius: 16px; padding: 10px 12px; margin-top: 10px; font-size: max(18px, calc(var(--fs) * .78)); line-height: 1.3; }
+.fb.ok { background: #dcf5e3; color: #0f5a26; }
+.fb.no { background: #fde4e3; color: #8a1712; }
+.fb b { display: block; }
+
+.opt > span:last-child { min-width: 0; overflow-wrap: break-word; word-break: break-word; }
+.two .btn { flex: 1 1 0; min-width: 0; }
+.chip, .line { max-width: 100%; min-width: 0; overflow-wrap: break-word; word-break: break-word; }
+.ttw { overflow-x: auto; }
+
+.post { border: 1px solid var(--line); border-radius: 18px; padding: 12px; }
+.phead { display: flex; gap: 12px; align-items: center; margin-bottom: 8px; }
+.ptext { font-size: calc(var(--fs) * .85); line-height: 1.35; }
+.plikes { color: var(--grey); font-size: 16px; margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
+.call { display: flex; flex-direction: column; gap: 10px; }
+.callv { position: relative; height: 150px; border-radius: 18px; background: linear-gradient(160deg, #2c3e50, #1a252f); display: flex; align-items: center; justify-content: center; }
+.callbig { font-size: 76px; }
+.callsmall { position: absolute; right: 10px; bottom: 10px; width: 60px; height: 76px; border-radius: 12px; background: #4a5a6a; display: flex; align-items: center; justify-content: center; font-size: 36px; border: 2px solid #fff; }
+.calllive { position: absolute; left: 10px; top: 10px; color: #fff; background: #e5332a; border-radius: 8px; font-size: 14px; font-weight: 700; padding: 3px 8px; }
+.captions { background: #111; color: #fff; border-radius: 14px; padding: 10px 12px; font-size: calc(var(--fs) * .85); line-height: 1.35; }
+.captions b { color: #9a9aa0; font-size: 15px; }
+.cwho { color: #ffd60a; font-weight: 700; }
+.captions .gap { color: #ffd60a; }
+.sos { text-align: center; }
+.sose { font-size: 64px; }
+.sosnums { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 10px; }
+.sosnums span { background: #fde4e3; color: #8a1712; border-radius: 10px; padding: 4px 10px; font-weight: 700; font-size: 17px; }
+.dircard { border: 2px solid var(--line); border-radius: 18px; padding: 14px; text-align: center; }
+.dircard .oe { font-size: 64px; }
+.calv { display: flex; flex-direction: column; gap: 8px; }
+.cev { border-left: 6px solid #ff3b30; background: #fff5f4; border-radius: 10px; padding: 8px 10px; font-size: calc(var(--fs) * .72); line-height: 1.3; }
+.cev b { display: block; color: #b3170e; }
+.cards { display: flex; flex-direction: column; gap: 8px; }
+.ccard { border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; font-size: calc(var(--fs) * .72); line-height: 1.35; background: #fafafa; }
+.hrs { border-collapse: collapse; width: 100%; font-size: clamp(15px, calc(var(--fs) * .55), 20px); margin-top: 10px; }
+.hrs th, .hrs td { border: 1px solid var(--line); padding: 6px 5px; text-align: center; }
+.hrs th { background: #fff0d6; }
+.hrs td:first-child { text-align: left; font-weight: 700; }
+.wordcard .ww, .ccard, .ptext, .captions, .caption { overflow-wrap: break-word; word-break: break-word; }
+
+/* new game types */
+.fillrow { display: flex; flex-wrap: wrap; gap: 8px; }
+.fillrow .opt { width: auto; flex: 1 1 auto; justify-content: center; background: #fff8e6; border-color: #e7c66b; }
+.qgap { display: inline-block; min-width: 3.5em; border-bottom: 3px solid #b07a00; color: #b07a00; text-align: center; }
+.qgap.filled { color: #0f5a26; border-color: #1f9d47; background: #dcf5e3; border-radius: 6px; padding: 0 .2em; }
+.opt.stk { border-radius: 26px; background: #fff3d6; border: 3px solid #ffb84d; box-shadow: 0 3px 0 #e69a2e; font-weight: 700; }
+.opt.stk .lt { background: #ffb84d; color: #fff; }
+.swbtns { display: flex; gap: 10px; flex-wrap: wrap; }
+.swbtns .opt { flex: 1 1 5.5em; min-width: 0; overflow-wrap: break-word; justify-content: center; text-align: center; font-weight: 800; min-height: 84px; }
+.swbtns .opt.l { background: #fff0ef; border-color: #ff8a80; }
+.swbtns .opt.r { background: #eefaf1; border-color: #6fd18a; }
+.swl { animation: swl .6s forwards; } .swr { animation: swr .6s forwards; }
+@keyframes swl { to { transform: translateX(-30px) rotate(-6deg); opacity: .55; } }
+@keyframes swr { to { transform: translateX(30px) rotate(6deg); opacity: .55; } }
+.pairs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pcol { display: flex; flex-direction: column; gap: 8px; }
+.pbtn { border: 2px solid var(--line); background: #fff; border-radius: 14px; padding: .35em .45em; font-size: calc(var(--fs) * .78); text-align: left; min-height: 60px; color: var(--ink); overflow-wrap: break-word; word-break: break-word; }
+.pcol.lft .pbtn { background: #eef4ff; border-color: #9cc0ff; font-weight: 700; }
+.pbtn.sel { outline: 4px solid #0a7aff; outline-offset: 1px; }
+.pbtn.right { background: #dcf5e3 !important; border-color: #34c759 !important; color: #0f5a26; }
+.pbtn.wrong { background: #fde4e3 !important; border-color: #ff3b30 !important; }
+.sortcard { text-align: center; background: #fff; border: 3px dashed #a8a8ae; border-radius: 18px; padding: 14px; font-size: var(--fs); font-weight: 700; margin-bottom: 10px; min-height: 80px; display: flex; align-items: center; justify-content: center; }
+.sortcard.wrong { border-color: #ff3b30; background: #fde4e3; }
+.bucks { display: flex; gap: 8px; flex-wrap: wrap; }
+.bucks .opt { flex: 1 1 0; min-width: 6em; justify-content: center; text-align: center; font-weight: 700; }
+.bins { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.bin { flex: 1 1 0; min-width: 6em; background: #f2f2f7; border-radius: 12px; padding: 6px; min-height: 44px; }
+.bin b { display: block; font-size: max(15px, calc(var(--fs) * .55)); color: var(--grey); }
+.bin span { display: block; background: #dcf5e3; border-radius: 8px; padding: 2px 6px; margin-top: 4px; font-size: max(16px, calc(var(--fs) * .6)); }
+.words { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.words .opt { width: auto; justify-content: center; }
+.words .opt.found { background: #fff3cd; border-color: #e0a800; text-decoration: line-through; }
+.words .opt.fixed { background: #dcf5e3; border-color: #34c759; text-decoration: none; }
+.fixq { font-weight: 700; font-size: max(18px, calc(var(--fs) * .78)); margin: 8px 0 6px; }
+.slots { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 12px; }
+.slot { width: 1.5em; height: 1.8em; border-bottom: 4px solid #8e8e93; font-size: var(--fs); font-weight: 800; display: flex; align-items: center; justify-content: center; background: #fff; border-radius: 6px 6px 0 0; }
+.slots.ok .slot { border-color: #1f9d47; color: #0f5a26; background: #dcf5e3; }
+.slots.no .slot { border-color: #e5332a; background: #fde4e3; }
+.tiles { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.tile { width: 1.9em; height: 1.9em; border-radius: 12px; border: 0; background: #ffd60a; box-shadow: 0 4px 0 #c9a400; font-size: var(--fs); font-weight: 800; color: #3a3000; }
+.tile.used { visibility: hidden; }
+.dial { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; margin: 6px 0 4px; }
+.dialv { min-width: 4.2em; text-align: center; font-size: calc(var(--fs) * 1.5); font-weight: 800; background: #111; color: #7CFC9A; border-radius: 14px; padding: .1em .3em; font-variant-numeric: tabular-nums; }
+.dbtn { min-width: 64px; min-height: 64px; border-radius: 50%; border: 0; background: #e5e5ea; font-size: max(20px, calc(var(--fs) * .8)); font-weight: 800; color: var(--ink); }
+.dunit { text-align: center; color: var(--grey); font-size: max(16px, calc(var(--fs) * .6)); }
+.rsteps { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.rsteps span { background: #f2f2f7; border-radius: 12px; padding: 6px 12px; font-weight: 700; font-size: max(18px, calc(var(--fs) * .7)); }
+.rsteps span.ok { background: #dcf5e3; color: #0f5a26; }
+svg .pl.done rect { fill: #b9efc9 !important; stroke: #1f9d47 !important; stroke-width: 6 !important; }
+.tags { display: flex; gap: 10px; margin: 0 0 14px; }
+.tag { width: 70px; height: 74px; border: 0; border-radius: 12px 12px 12px 12px; background: #fff7e0; color: #3a3000; font-size: 28px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,.3); position: relative; }
+.tag::before { content: ""; position: absolute; top: 6px; width: 10px; height: 10px; border-radius: 50%; background: #b3170e; }
+.tag small { font-size: 13px; font-weight: 800; margin-top: 2px; }
+.tag.on { outline: 3px solid #ffd60a; }
+.pass { overflow-y: auto; padding-bottom: 20px; }
+.pass .keys { grid-template-columns: repeat(3, 72px); gap: 12px 24px; }
+.pass .key { width: 72px; height: 72px; font-size: 32px; }
+.clue { background: #fff7e0; color: #3a3000; border-radius: 14px; padding: 10px 14px; font-size: max(18px, calc(var(--fs) * .7)); font-weight: 600; max-width: 330px; margin: 0 12px 12px; text-align: center; box-shadow: 0 6px 16px rgba(0,0,0,.3); }
+.clue .ans { display: block; color: #1f9d47; margin-top: 4px; }
+/* top pane content */
+.chat { display: flex; flex-direction: column; gap: 8px; font-size: calc(var(--fs) * .85); }
+.ctime { text-align: center; color: var(--grey); font-size: max(15px, calc(var(--fs) * .55)); margin: 4px 0; }
+.msg { max-width: 86%; }
+.msg .who { font-size: max(15px, calc(var(--fs) * .55)); color: var(--grey); margin: 0 0 2px 10px; }
+.msg .bub { background: #e9e9eb; border-radius: 20px; padding: .4em .7em; line-height: 1.3; }
+.msg.me { align-self: flex-end; }
+.msg.me .bub { background: #0a7aff; color: #fff; }
+.msg.me .bub.ghost { background: #fff; color: #8e8e93; border: 2px dashed #c7c7cc; }
+.gap { display: inline-block; min-width: 3.2em; border-bottom: 3px solid currentColor; color: #b07a00; font-weight: 700; letter-spacing: -1px; }
+.msg.me .gap { color: #ffe680; }
+.wordcard { text-align: center; padding: 10px 0; }
+.wordcard .we { font-size: 70px; }
+.wordcard .ww { font-size: min(calc(var(--fs) * 1.4), 11vw, 42px); font-weight: 800; margin: 6px 0; }
+.wordcard .wn { color: var(--grey); font-size: max(17px, calc(var(--fs) * .65)); }
+.envelope { background: #fbf6ea; border: 2px solid #d8cba8; border-radius: 10px; padding: 18px 14px 18px 18px; position: relative; min-height: 170px; box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+.stamp { position: absolute; top: 10px; right: 10px; width: 56px; height: 64px; border: 3px dotted #c0392b; border-radius: 4px; text-align: center; font-size: 15px; font-weight: 700; color: #c0392b; padding-top: 4px; line-height: 1.4; background: #fff; }
+.envlines { margin-top: 64px; margin-left: 12%; }
+.envline { font-family: "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive; font-size: calc(var(--fs) * .85); border-bottom: 2px solid #d8cba8; padding: 2px 4px; min-height: 1.5em; }
+.note { color: var(--grey); font-size: max(17px, calc(var(--fs) * .65)); margin: 10px 2px 0; }
+.notice { border: 2px solid #c9d7ee; border-radius: 16px; padding: 12px 14px; background: #f7faff; font-size: calc(var(--fs) * .78); line-height: 1.35; }
+.notice p { margin: 8px 0; }
+.nhead, .tthead, .cmphead { font-weight: 800; font-size: calc(var(--fs) * .85); color: #0a3a7a; }
+.nsub, .ttsub { color: var(--grey); font-size: max(15px, calc(var(--fs) * .55)); margin-bottom: 4px; }
+.photo { background: linear-gradient(160deg, #fdf6e3, #f6dcdc); border-radius: 18px; height: 180px; position: relative; display: flex; align-items: center; justify-content: center; border: 6px solid #fff; box-shadow: 0 4px 14px rgba(0,0,0,.15); }
+.scene { font-size: 64px; letter-spacing: 6px; }
+.ptime { position: absolute; left: 10px; bottom: 8px; background: rgba(0,0,0,.55); color: #fff; font-size: 15px; padding: 3px 8px; border-radius: 8px; }
+.caption { font-size: var(--fs); margin-top: 12px; line-height: 1.35; }
+.vm { border: 1px solid var(--line); border-radius: 18px; padding: 12px; }
+.vmhead { display: flex; gap: 12px; align-items: center; }
+.vmav { width: 48px; height: 48px; border-radius: 50%; background: #8e8e93; color: #fff; font-weight: 700; font-size: 22px; display: flex; align-items: center; justify-content: center; }
+.vmwho { font-weight: 700; font-size: calc(var(--fs) * .8); }
+.vmlen { color: var(--grey); font-size: 16px; }
+.vmbar { display: flex; align-items: center; gap: 10px; margin: 12px 0; }
+.vmplay { width: 40px; height: 40px; border-radius: 50%; background: var(--blue); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px; flex: none; }
+.vmwave { flex: 1; height: 26px; background: repeating-linear-gradient(90deg, #8e8e93 0 3px, transparent 3px 7px); -webkit-mask: linear-gradient(0deg, transparent 20%, #000 20% 80%, transparent 80%); opacity: .6; border-radius: 4px; }
+.vmtx { background: #f2f2f7; border-radius: 12px; padding: 10px 12px; font-size: calc(var(--fs) * .85); line-height: 1.35; }
+.vmtx b { font-size: 15px; color: var(--grey); }
+.tt table { border-collapse: collapse; width: 100%; font-size: clamp(16px, calc(var(--fs) * .6), 22px); margin-top: 6px; }
+.tt th, .tt td { border: 1px solid var(--line); padding: 6px 4px; text-align: center; }
+.tt th { background: #fff4c2; }
+.tt td:first-child { text-align: left; font-weight: 600; }
+
+.cmp .gopt { display: flex; gap: 12px; align-items: center; border: 2px solid var(--line); border-radius: 14px; padding: 10px; margin: 8px 0; font-size: calc(var(--fs) * .78); background: #fff; }
+.cmp .oe { font-size: 40px; }
+.poll .rev { background: #f2f2f7; border-radius: 14px; padding: 10px 12px; margin: 8px 0; font-size: calc(var(--fs) * .78); line-height: 1.35; }
+.bars div { font-size: max(16px, calc(var(--fs) * .6)); margin: 6px 0; display: flex; align-items: center; gap: 8px; }
+.bars span { display: inline-block; height: 14px; background: #2fb5a5; border-radius: 7px; }
+.mapwrap { overflow: auto; margin: -14px; padding: 8px; }
+.mapwrap svg { display: block; width: 100%; min-width: 500px; height: auto; }
+.mapwrap.zoom svg { min-width: 820px; }
+.zoombtn { position: sticky; top: 0; float: right; z-index: 3; background: rgba(255,255,255,.95); border: 2px solid var(--line); border-radius: 12px; font-size: 17px; font-weight: 700; padding: 6px 10px; min-height: 44px; margin: 0 0 4px 6px; }
+svg .pl { cursor: default; }
+.tapmode svg .pl { cursor: pointer; }
+.tapmode svg .pl rect { stroke-width: 3.5; }
+svg .pl.hitok rect { fill: #b9efc9 !important; stroke: #1f9d47 !important; stroke-width: 6 !important; }
+svg .pl.hitno rect { fill: #ffc9c6 !important; stroke: #e5332a !important; stroke-width: 6 !important; }
+
+/* sheets, toast, banner */
+.sheetbg { position: absolute; inset: 0; background: rgba(0,0,0,.45); z-index: 80; display: flex; align-items: flex-end; }
+.sheet { background: #fff; color: var(--ink); width: 100%; border-radius: 26px 26px 0 0; padding: 20px 18px 26px; max-height: 88%; overflow: auto; font-size: var(--fs); }
+.sheet h2 { margin: 0 0 8px; font-size: calc(var(--fs) * 1.05); }
+.sheet p { margin: 6px 0; line-height: 1.35; }
+.sheet .big { font-size: 60px; text-align: center; }
+.sizes { display: flex; gap: 8px; }
+.sizes button { flex: 1; border: 2px solid var(--line); background: #fff; border-radius: 14px; min-height: 60px; font-weight: 700; }
+.sizes button.on { border-color: var(--blue); background: #e8f1ff; }
+.srow { border-top: 1px solid var(--line); padding: 12px 0; }
+.srow .sl { font-weight: 700; margin-bottom: 6px; }
+.toast { position: absolute; left: 50%; bottom: 120px; transform: translateX(-50%); background: rgba(30,30,30,.92); color: #fff; padding: 12px 18px; border-radius: 16px; font-size: max(18px, calc(var(--fs) * .7)); z-index: 90; max-width: 88%; text-align: center; opacity: 0; transition: opacity .25s; pointer-events: none; }
+.toast.show { opacity: 1; }
+.banner { position: absolute; left: 10px; right: 10px; top: 52px; z-index: 85; visibility: hidden; background: rgba(245,245,248,.97); color: #000; border-radius: 20px; padding: 12px 14px; display: flex; gap: 12px; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,.35); transform: translateY(-260px); transition: transform .35s ease, visibility .35s; }
+.banner.show { transform: translateY(0); visibility: visible; }
+.banner .ni { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex: none; }
+.banner .bt { font-size: max(18px, calc(var(--fs) * .68)); line-height: 1.25; }
+.banner .bt b { display: block; font-size: 15px; color: #555; }
+
+/* final */
+.final { padding: 64px 18px 24px; overflow: auto; align-items: center; }
+.final .card p { font-size: var(--fs); line-height: 1.35; margin: 0 0 10px; }
+.final .say { background: #f2f2f7; border-radius: 16px; padding: 10px 12px; }
+.score { text-align: center; font-size: calc(var(--fs) * 1.2); font-weight: 800; margin: 8px 0; }
+.stars { text-align: center; font-size: 40px; }
+.slist { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; font-size: max(17px, calc(var(--fs) * .62)); margin: 10px 0; }
+.confetti { position: absolute; top: -40px; font-size: 28px; animation: fall linear forwards; z-index: 70; pointer-events: none; }
+@keyframes fall { to { transform: translateY(1100px) rotate(540deg); } }
+@media (prefers-reduced-motion: reduce) { .app.next .ico, .confetti, .dots.shake { animation: none !important; } .banner, .toast { transition: none; } }
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+  <div class="island"></div>
+  <div class="sb" id="sb">
+    <span id="sbtime">12:55</span>
+    <span class="r">
+      <svg width="19" height="12" viewBox="0 0 19 12" aria-hidden="true"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg>
+      <svg width="17" height="12" viewBox="0 0 17 12" aria-hidden="true"><path d="M8.5 2.2c2.5 0 4.8 1 6.5 2.6l1.3-1.3C14.3 1.5 11.5.3 8.5.3S2.7 1.5.7 3.5L2 4.8c1.7-1.6 4-2.6 6.5-2.6zm0 3.6c1.5 0 2.9.6 4 1.6l1.3-1.3a7.5 7.5 0 00-10.6 0l1.3 1.3c1.1-1 2.5-1.6 4-1.6zm0 3.6c.6 0 1.1.2 1.5.6L8.5 11.5 7 10c.4-.4.9-.6 1.5-.6z" fill="currentColor"/></svg>
+      <svg width="27" height="13" viewBox="0 0 27 13" aria-hidden="true"><rect x=".5" y=".5" width="23" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".5"/><rect x="2" y="2" width="17" height="9" rx="2" fill="currentColor"/><path d="M25 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".5"/></svg>
+      <button class="fsbtn" id="fsbtn" aria-label="Full screen" title="Full screen"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M2 7V2h5M13 2h5v5M18 13v5h-5M7 18H2v-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </span>
+  </div>
+  <div class="scr" id="scr"></div>
+  <div class="banner" id="banner"></div>
+  <div class="toast" id="toast"></div>
+</div>
+<script>
+const CFG = {"file":"VU23562_Lesson_6_Santa_Catches_The_Bus_Sunnys_Phone","lessonTag":"Lesson 6","lesson":"Santa catches the bus","owner":"Sunny","keyname":"vu23562_l6_sunnys_phone_v2","start":775,"date":"Saturday 19 December","code":"4546","hint":"🎁 Tap each gift tag. Each tag gives one number of the code.","hint3":"The code is 4 5 4 6.","big":"🚌📱🧝","intro":["It's Saturday 19 December. You are on the bus in Crows Nest. There's a phone on the seat next to you. It has a green elf case. 🧝","Who owns it? Open the apps and find out. Get the phone back before the party starts at <b>2 pm</b>!"],"notis":[["💬","#34c759","Grace 🎅","now","Where are you, elf? The party starts at 2 on the dot!"],["💬","#34c759","Grace 🎅","3m ago","Sunny? Hello? Sunny??? 😬"],["🎁","#e5332a","Gift tags","5m ago","The code is on the gift tags. Solve the puzzle!"]],"goal":"🎁 Get the phone back to Sunny","deadline":"Party starts at 2:00 pm","helpGoal":"Get the phone back to Sunny before 2 pm.","allDone":"You know everything about Sunny's party. Run to the hall!","runBtn":"🏃 Run to the hall","runIcon":"🎅","runLabel":"Go to the hall","finale":["You run into the hall on Miller Street.",["🧝","Sunny","My phone! Thank you! You're a lifesaver!"],["🎅","Grace","Ho, ho, ho! Just in time. The party starts at 2 on the dot!"]],"about":"A practice game for VU23562 Lesson 6. The streets and suburbs are real. The people's homes, shops, bus, prices and phone numbers are for practice.","lockTitle":"Solve the puzzle to unlock","clues":[["🎄","How many syllables are in Kirribilli?","4"],["🎅","How many letters are in the word SANTA?","5"],["🚌","On Opal, children under _ travel free.","4"],["📮","Christmas Day is 25 December. Boxing Day is 2_ December.","6"]]};
+const APPS = [{"id":"messages","name":"Messages","icon":"💬","col":["#34c759","#20a446"],"banner":"Grace: Sunny?? Hello??? 😬","top":"<div class=\"chat\"><div class=\"ctime\">Today 12:41 pm</div><div class=\"msg\"><div class=\"who\">Grace 🎅</div><div class=\"bub\">Ho, ho, ho! I'm on the bus now. In the Santa suit! It's 35 degrees. 😅</div></div><div class=\"msg\"><div class=\"who\">Meryl</div><div class=\"bub\">Ha! Is the bus chockers?</div></div><div class=\"msg\"><div class=\"who\">Grace 🎅</div><div class=\"bub\">Yes! Everyone is taking photos of Santa. 📸</div></div><div class=\"msg\"><div class=\"who\">Grace 🎅</div><div class=\"bub\">Sunny, where are you? Have you got the presents?</div></div><div class=\"msg me\"><div class=\"bub\">Yes! I'm on the 12:40 bus from Crows Nest. Two big bags. They're heavy! 🎁🎁</div></div><div class=\"msg\"><div class=\"who\">Meryl</div><div class=\"bub\">The hall is on Miller Street, Cammeray. It's next to the park. You can't miss it.</div></div><div class=\"msg me\"><div class=\"bub\">Great. Where do I get off?</div></div><div class=\"msg\"><div class=\"who\">Grace 🎅</div><div class=\"bub\">At the stop opposite the hall. Look for the big Christmas tree.</div></div><div class=\"msg\"><div class=\"who\">Meryl</div><div class=\"bub\">I'm making a pavlova for the party! 🍓</div></div><div class=\"msg\"><div class=\"who\">Grace 🎅</div><div class=\"bub\">The party starts at 2 on the dot. Don't be late, elf! 🧝</div></div><div class=\"ctime\">12:52 pm</div><div class=\"msg\"><div class=\"who\">Grace 🎅</div><div class=\"bub\">Sunny? Hello? Sunny??? 😬</div></div></div>","map":null,"optStyle":null,"items":[{"t":"mc","q":"You found this phone on the bus. Whose phone is it?","why":"Grace writes \"Sunny, where are you?\" The answer comes from \"Me\", the owner of this phone.","hint":"Who does Grace ask? Who answers as \"Me\"?","opts":["Grace's phone","Meryl's phone","Sunny's phone"],"ans":2,"top":null},{"t":"mc","q":"Where is the party?","why":"Meryl says the hall is on Miller Street, Cammeray.","hint":"Read Meryl's first long message.","opts":["At the hall on Miller Street, Cammeray","At the park on Miller Street, Crows Nest","On the bus to Cammeray"],"ans":0,"top":null},{"t":"mc","q":"What time does the party start?","why":"Grace says the party starts at 2 on the dot.","hint":"Read Grace's last message.","opts":["At 12:40 pm","At 2 pm","At 12:52 pm"],"ans":1,"top":null},{"t":"order","words":true,"q":"Keep it going. Build a question for Grace about the Santa suit.","chips":["Is","it","hot","in","the","suit?"],"why":"Is it hot in the suit? A short question keeps the talk going.","hint":"Start with \"Is\".","show":[4,2,3,0,5,1],"top":null},{"t":"mc","q":"What is Sunny carrying?","why":"Sunny writes: \"Two big bags. They're heavy!\"","hint":"Look at the 🎁 message.","opts":["A Santa suit and a hat","Two big bags of presents","A big pavlova for the party"],"ans":1,"top":null},{"t":"mc","q":"Where is Sunny's bus stop?","why":"Grace says: \"At the stop opposite the hall.\"","hint":"Read Grace's answer to \"Where do I get off?\"","opts":["Opposite the hall","Next to the big park","At the stop in Crows Nest"],"ans":0,"top":null},{"t":"order","words":true,"q":"Keep it going. Build a question for Meryl about the pavlova.","chips":["How","big","is","it?"],"why":"How big is it? Ask about the thing the person tells you.","hint":"Start with \"How\".","show":[2,1,0,3],"top":null},{"t":"mc","q":"Meryl writes \"Is the bus chockers?\" What does \"chockers\" mean?","why":"Chockers means very full, crowded.","hint":"Think of a bus with no free seats.","opts":["very hot and sunny","very late and slow","very full of people"],"ans":2,"top":null},{"t":"mc","q":"Grace says: \"I'm on the bus now.\" What is the best reply?","why":"React, then ask a question to keep it going.","hint":"Choose the reply with a question.","opts":["Bus. OK. I know the bus.","Great! Which bus are you on?","OK. Bye. See you later, maybe."],"ans":1,"top":null},{"t":"order","q":"Point and explain. Sunny shows a photo of the hall to a new elf. Put the words in order.","chips":["Look, here.","This is","the hall."],"why":"Look, here. This is the hall.","hint":"Start with \"Look, here.\"","show":[2,0,1],"top":null}]},{"id":"stickers","name":"Stickers","icon":"😎","col":["#ff9f0a","#f07800"],"banner":"New sticker pack: Aussie Christmas 🦘","top":null,"map":null,"optStyle":"sticker","items":[{"t":"pairs","q":"Memory match! Tap an expression, then tap its meaning.","L":["it's handy","just around the corner","you can't miss it","a bit of a hike"],"R":["it is useful and easy to get to","very close, in the next street","it is very easy to see","quite a long walk"],"why":"All four pairs matched.","showR":[3,2,1,0],"top":null,"hint":null},{"t":"mc","top":"<div class=\"chat\"><div class=\"ctime\">Today 12:58 pm</div><div class=\"msg\"><div class=\"who\">Grace 🎅</div><div class=\"bub\">Where's the Christmas tree shop? Is it far?<br><br><i>Sunny's reply:</i> No, it's <span class=\"gap\">_______</span>, in the next street.</div></div><div class=\"msg me\"><div class=\"bub ghost\">Choose a sticker 👇</div></div></div>","q":"Choose the sticker for the gap.","why":"Just around the corner means very close, in the next street.","hint":"The shop is very close.","opts":["a bit of a hike","just around the corner","heaps faster"],"ans":1},{"t":"mc","top":"<div class=\"chat\"><div class=\"ctime\">Today 12:58 pm</div><div class=\"msg\"><div class=\"who\">Ms Chen</div><div class=\"bub\">Thanks for carrying the presents, Sunny!<br><br><i>Sunny's reply:</i> <span class=\"gap\">_______</span>!</div></div><div class=\"msg me\"><div class=\"bub ghost\">Choose a sticker 👇</div></div></div>","q":"Choose the sticker for the gap.","why":"No worries means \"That's OK, you're welcome.\"","hint":"How do you answer \"Thanks\"?","opts":["No worries","It's a pain","I reckon"],"ans":0},{"t":"mc","top":"<div class=\"chat\"><div class=\"ctime\">Today 12:58 pm</div><div class=\"msg\"><div class=\"who\">Grace 🎅</div><div class=\"bub\">I can walk to the hall. It's 40 minutes.<br><br><i>Sunny's reply:</i> In a Santa suit? That's <span class=\"gap\">_______</span>!</div></div><div class=\"msg me\"><div class=\"bub ghost\">Choose a sticker 👇</div></div></div>","q":"Choose the sticker for the gap.","why":"A bit of a hike means quite a long walk.","hint":"40 minutes is a long walk.","opts":["just around the corner","handy","a bit of a hike"],"ans":2},{"t":"mc","top":"<div class=\"chat\"><div class=\"ctime\">Today 12:58 pm</div><div class=\"msg\"><div class=\"who\">Meryl</div><div class=\"bub\">I'm wrapping fifty presents tonight! 🎁<br><br><i>Sunny's reply:</i> Fifty? <span class=\"gap\">_______</span>!</div></div><div class=\"msg me\"><div class=\"bub ghost\">Choose a sticker 👇</div></div></div>","q":"Choose the sticker for the gap.","why":"It's a pain means it is annoying or difficult.","hint":"Wrapping fifty presents is hard work.","opts":["No worries","You can't miss it","It's a pain"],"ans":2},{"t":"pairs","q":"Memory match! Tap an expression, then tap its meaning.","L":["I reckon","heaps faster","it's a pain","no worries"],"R":["I think","much faster","it is annoying or difficult","that's OK, you're welcome"],"why":"All four pairs matched.","showR":[1,0,3,2],"top":null,"hint":null},{"t":"mc","top":"<div class=\"chat\"><div class=\"ctime\">Today 12:58 pm</div><div class=\"msg\"><div class=\"who\">Grace 🎅</div><div class=\"bub\">The roads are busy at Christmas.<br><br><i>Sunny's reply:</i> True. The metro is <span class=\"gap\">_______</span> than a taxi in the traffic.</div></div><div class=\"msg me\"><div class=\"bub ghost\">Choose a sticker 👇</div></div></div>","q":"Choose the sticker for the gap.","why":"Heaps faster means much faster.","hint":"Look for a word with -er.","opts":["heaps faster","a bit of a hike","just around the corner"],"ans":0},{"t":"mc","top":"<div class=\"chat\"><div class=\"ctime\">Today 12:58 pm</div><div class=\"msg\"><div class=\"who\">Grace 🎅</div><div class=\"bub\">How do I find the hall?<br><br><i>Sunny's reply:</i> Look for the big red door and the Christmas tree. <span class=\"gap\">_______</span>.</div></div><div class=\"msg me\"><div class=\"bub ghost\">Choose a sticker 👇</div></div></div>","q":"Choose the sticker for the gap.","why":"You can't miss it means it is very easy to see and find.","hint":"A big red door is easy to see.","opts":["It's a pain","It's a bit of a hike","You can't miss it"],"ans":2},{"t":"mc","top":"<div class=\"chat\"><div class=\"ctime\">Today 12:58 pm</div><div class=\"msg\"><div class=\"who\">Meryl</div><div class=\"bub\">Do the kids like candy canes?<br><br><i>Sunny's reply:</i> <span class=\"gap\">_______</span> they love them!</div></div><div class=\"msg me\"><div class=\"bub ghost\">Choose a sticker 👇</div></div></div>","q":"Choose the sticker for the gap.","why":"I reckon means I think.","hint":"Sunny gives an opinion.","opts":["No worries","I reckon","It's handy"],"ans":1},{"t":"mc","top":"<div class=\"chat\"><div class=\"ctime\">Today 12:58 pm</div><div class=\"msg\"><div class=\"who\">Grace 🎅</div><div class=\"bub\">The bus stops right outside the hall.<br><br><i>Sunny's reply:</i> Great. <span class=\"gap\">_______</span>.</div></div><div class=\"msg me\"><div class=\"bub ghost\">Choose a sticker 👇</div></div></div>","q":"Choose the sticker for the gap.","why":"Handy means useful and easy to use or get to.","hint":"A stop outside the hall is very useful.","opts":["That's a bit of a hike","That's handy","That's a pain"],"ans":1}]},{"id":"sayit","name":"Say It","icon":"🎙️","col":["#5e5ce6","#3f3dc4"],"banner":"Say It: practise your party words 🎙️","top":null,"map":null,"optStyle":null,"items":[{"t":"syl","top":"<div class=\"wordcard\"><div class=\"we\">🍓</div><div class=\"ww\">pavlova</div><div class=\"wn\">A Christmas dessert</div></div>","q":"Tap the strong syllable.","s":["pav","lo","va"],"a":1,"why":"pav-LO-va. Now say it aloud.","hint":null},{"t":"syl","top":"<div class=\"wordcard\"><div class=\"we\">🚉</div><div class=\"ww\">Artarmon</div><div class=\"wn\">A suburb near Chatswood</div></div>","q":"Tap the strong syllable.","s":["Ar","ta","mon"],"a":0,"why":"AR-ta-mon. Now say it aloud.","hint":null},{"t":"dial","top":"<div class=\"wordcard\"><div class=\"we\">🎉</div><div class=\"ww\">celebration</div><div class=\"wn\">A big party</div></div>","q":"How many syllables? Use − and +. Then tap Check.","kind":"num","ans":4,"start":1,"min":1,"max":6,"step":1,"why":"cel-e-BRA-tion: 4 syllables.","hint":null},{"t":"syl","top":"<div class=\"wordcard\"><div class=\"we\">🌳</div><div class=\"ww\">Waverton</div><div class=\"wn\">A suburb near North Sydney</div></div>","q":"Tap the strong syllable.","s":["Wa","ver","ton"],"a":0,"why":"WA-ver-ton. Now say it aloud.","hint":null},{"t":"syl","top":"<div class=\"wordcard\"><div class=\"we\">💌</div><div class=\"ww\">invitation</div><div class=\"wn\">A card for a party</div></div>","q":"Tap the strong syllable.","s":["in","vi","ta","tion"],"a":2,"why":"in-vi-TA-tion. Now say it aloud.","hint":null},{"t":"syl","top":"<div class=\"wordcard\"><div class=\"we\">☂️</div><div class=\"ww\">umbrella</div><div class=\"wn\">For sun or rain</div></div>","q":"Tap the strong syllable.","s":["um","brel","la"],"a":1,"why":"um-BREL-la. Now say it aloud.","hint":null},{"t":"dial","top":"<div class=\"wordcard\"><div class=\"we\">🏖️</div><div class=\"ww\">Mosman</div><div class=\"wn\">A suburb near the harbour</div></div>","q":"How many syllables? Use − and +. Then tap Check.","kind":"num","ans":2,"start":4,"min":1,"max":6,"step":1,"why":"MOS-man: 2 syllables.","hint":null},{"t":"syl","top":"<div class=\"wordcard\"><div class=\"we\">👨‍👩‍👧</div><div class=\"ww\">together</div><div class=\"wn\">With other people</div></div>","q":"Tap the strong syllable.","s":["to","ge","ther"],"a":1,"why":"to-GE-ther. Now say it aloud.","hint":null},{"t":"syl","top":"<div class=\"wordcard\"><div class=\"we\">📅</div><div class=\"ww\">January</div><div class=\"wn\">The month after December</div></div>","q":"Tap the strong syllable.","s":["Jan","u","ar","y"],"a":0,"why":"JAN-u-ar-y. Now say it aloud.","hint":null},{"t":"syl","top":"<div class=\"wordcard\"><div class=\"we\">🏡</div><div class=\"ww\">Wollstonecraft</div><div class=\"wn\">A suburb near Waverton</div></div>","q":"Tap the strong syllable.","s":["Woll","stone","craft"],"a":0,"why":"WOLL-stone-craft. Now say it aloud.","hint":null}]},{"id":"post","name":"Post","icon":"📮","col":["#ff453a","#d1251b"],"banner":"Post: your thank-you card is ready to send 📮","top":null,"map":null,"optStyle":null,"items":[{"t":"order","top":"<div class=\"envelope\"><div class=\"stamp\">🎄<br>65c</div><div class=\"envlines\"><div class=\"envline\">?</div><div class=\"envline\">?</div><div class=\"envline\">?</div></div></div><p class=\"note\">Sunny is sending a thank-you card to the hall manager.</p>","q":"Tap the address lines in the correct order.","chips":["Ms Lily Chen","Unit 2, 48 Palmer Street","Cammeray NSW 2062"],"why":"Name, then number and street, then suburb, state and postcode.","hint":"Start with the name.","show":[2,0,1]},{"t":"mc","top":"<div class=\"envelope\"><div class=\"stamp\">🎄<br>65c</div><div class=\"envlines\"><div class=\"envline\">Ms Lily Chen</div><div class=\"envline\">Unit 2, 48 Palmer Street</div><div class=\"envline\">?</div></div></div><p class=\"note\">Line 3 is missing.</p>","q":"Which line 3 is correct?","why":"Suburb, then state, then postcode, with capital letters.","hint":"Suburb first. Use capital letters.","opts":["2062 NSW Cammeray","cammeray nsw 2062","Cammeray NSW 2062"],"ans":2},{"t":"spell","top":"<div class=\"envelope\"><div class=\"stamp\">🎄<br>65c</div><div class=\"envlines\"><div class=\"envline\">Mr Tom Rees</div><div class=\"envline\">120 Pacific Hwy</div><div class=\"envline\">North Sydney NSW 2060</div></div></div><p class=\"note\">Look at line 2.</p>","q":"Hwy is a short form. Spell the full word.","word":"HIGHWAY","why":"Hwy = Highway.","hint":"It starts with H. A big, long road.","tiles":["H","H","W","I","G","A","Y"]},{"t":"spot","top":"<div class=\"envelope\"><div class=\"stamp\">🎄<br>65c</div><div class=\"envlines\"><div class=\"envline\">Ms Lily Chen</div><div class=\"envline\">Unit 2, 48 Palmer street</div><div class=\"envline\">Cammeray NSW 2062</div></div></div><p class=\"note\">Santa's elf wrote this envelope.</p>","q":"Line 2 has a mistake. Tap the wrong word.","words":["Unit","2,","48","Palmer","street"],"bad":4,"fixq":"Choose the correct word.","why":"Street needs a capital letter in an address.","hint":"Look for a missing capital letter.","fixOpts":["Street","streets","St.reet"],"fixAns":0},{"t":"mc","top":"<div class=\"envelope\"><div class=\"stamp\">🎄<br>65c</div><div class=\"envlines\"><div class=\"envline\">Mr Ben Ward</div><div class=\"envline\">30 Raglan St</div><div class=\"envline\">Mosman NSW 2088</div></div></div><p class=\"note\">Look at line 3.</p>","q":"How do you say the postcode 2088?","why":"Say each number. 88 is \"double eight\".","hint":"Say each number. 0 is \"oh\".","opts":["twenty eighty-eight","two-oh-double-eight","two thousand and eighty-eight"],"ans":1},{"t":"spell","top":"<div class=\"envelope\"><div class=\"stamp\">🎄<br>65c</div><div class=\"envlines\"><div class=\"envline\">Ms Ana Lopez</div><div class=\"envline\">9 Bay View Cres</div><div class=\"envline\">Waverton NSW 2060</div></div></div><p class=\"note\">Look at line 2.</p>","q":"Cres is a short form. Spell the full word.","word":"CRESCENT","why":"Cres = Crescent.","hint":"It starts with CRE. A street with a curve.","tiles":["C","T","R","E","N","S","C","E"]},{"t":"mc","top":"<div class=\"envelope\"><div class=\"stamp\">🎄<br>65c</div><div class=\"envlines\"><div class=\"envline\">Mrs Kim Ho</div><div class=\"envline\">Unit 7, 15 Ernest St</div><div class=\"envline\">Cammeray NSW 2062</div></div></div><p class=\"note\">Look at line 2.</p>","q":"How do you say line 2?","why":"Say the unit number, then the street number. Say the full word \"Street\".","hint":"Unit first, then the street number.","opts":["seven fifteen unit, Ernest Street","unit seven, fifteen Ernest Street","unit seventy-fifteen Ernest Street"],"ans":1},{"t":"spot","top":"<div class=\"envelope\"><div class=\"stamp\">🎄<br>65c</div><div class=\"envlines\"><div class=\"envline\">Mr Ben Ward</div><div class=\"envline\">30 Raglan St</div><div class=\"envline\">mosman NSW 2088</div></div></div><p class=\"note\">Santa's elf wrote this envelope.</p>","q":"Line 3 has a mistake. Tap the wrong word.","words":["mosman","NSW","2088"],"bad":0,"fixq":"Choose the correct word.","why":"A suburb needs a capital letter: Mosman.","hint":"Look for a missing capital letter.","fixOpts":["Mosman","MosMan","Mossman"],"fixAns":0},{"t":"mc","top":"<div class=\"envelope\"><div class=\"stamp\">🎄<br>65c</div><div class=\"envlines\"><div class=\"envline\">?</div><div class=\"envline\">?</div></div></div><p class=\"note\">A child at the party writes a letter to Santa.</p>","q":"What is the real address for a letter to Santa in Australia?","why":"Australia Post delivers letters to Santa, North Pole 9999.","hint":"Santa lives at the North Pole.","opts":["Santa, Sydney NSW 2000","Santa, North Sydney NSW 2060","Santa, North Pole 9999"],"ans":2},{"t":"order","top":"<div class=\"envelope\"><div class=\"stamp\">🎄<br>65c</div><div class=\"envlines\"><div class=\"envline\">Ms Lily Chen</div><div class=\"envline\">?</div><div class=\"envline\">Cammeray NSW 2062</div></div></div><p class=\"note\">Line 2 is mixed up.</p>","q":"Tap the parts of line 2 in the correct order.","chips":["48","Palmer","Street"],"why":"Number, then street name, then Street.","hint":"Start with the number.","show":[1,2,0]}]},{"id":"council","name":"My Council","icon":"🏛️","col":["#0a84ff","#0060d0"],"banner":"My Council: Christmas news for your area 🏛️","top":"<div class=\"notice\"><div class=\"nhead\">Christmas news from your council</div><div class=\"nsub\">Practice notice</div>\n      <p>🏊 <b>Pools.</b> Closed on Christmas Day. Open on Boxing Day from 8 am to 6 pm.</p>\n      <p>📚 <b>Libraries.</b> Closed from 25 to 28 December. Open again on Tuesday 29 December at 10 am.</p>\n      <p>♻️ <b>Boxes.</b> Lots of boxes after Christmas? Make them flat. Put them next to your yellow bin. We collect them from 28 December to 8 January.</p>\n      <p>🎁 <b>Wrapping paper.</b> Paper goes in the yellow bin. Shiny paper and ribbons go in the red bin.</p>\n      <p>📞 <b>After hours.</b> Urgent problem? Call (02) 5550 6100, 24 hours a day.</p></div>","map":null,"optStyle":null,"items":[{"t":"rwd","q":"The libraries are open on 27 December.","a":"W","why":"Libraries are closed from 25 to 28 December.","top":null,"hint":null},{"t":"rwd","q":"Entry to the pools is free on Boxing Day.","a":"DS","why":"The notice does not say the price.","top":null,"hint":null},{"t":"rwd","q":"The pools are open on Boxing Day.","a":"R","why":"Open on Boxing Day from 8 am to 6 pm.","top":null,"hint":null},{"t":"rwd","q":"Ribbons go in the yellow bin.","a":"W","why":"Shiny paper and ribbons go in the red bin.","top":null,"hint":null},{"t":"rwd","q":"The council collects flat boxes on 2 January.","a":"R","why":"They collect boxes from 28 December to 8 January.","top":null,"hint":null},{"t":"sort","q":"Read the notice. Which bin? Tap the right bin for each thing.","buckets":["♻️ Yellow bin","🗑️ Red bin"],"cards":[["Ribbons",1],["Christmas wrapping paper",0],["Christmas cards",0],["Shiny paper",1]],"why":"Paper goes in the yellow bin. Shiny paper and ribbons go in the red bin.","top":null,"hint":null},{"t":"sort","q":"Which council? Tap the council for each suburb.","buckets":["North Sydney","Willoughby City","Lane Cove"],"cards":[["Chatswood",1],["Naremburn",1],["Greenwich",2],["Waverton",0],["Crows Nest",0],["Lane Cove",2]],"why":"North Sydney: Waverton, Crows Nest. Willoughby City: Naremburn, Chatswood. Lane Cove: Greenwich, Lane Cove.","top":null,"hint":null},{"t":"mc","q":"When do the libraries open again?","why":"Open again on Tuesday 29 December at 10 am.","hint":"Read the Libraries line.","opts":["Monday 28 December at 10 am","Tuesday 29 December at 10 am","Tuesday 29 December at 8 am"],"ans":1,"top":null},{"t":"mc","q":"What is another name for your local council area?","why":"Your local council area is your local government area.","hint":"Think of \"government\".","opts":["local shopping area","local public transport area","local government area"],"ans":2,"top":null},{"t":"mc","q":"There is an urgent problem with a council bin at 9 pm. What number do you call?","why":"The notice says: call (02) 5550 6100, 24 hours a day.","hint":"Read the After hours line.","opts":["(02) 5550 6100","(02) 5550 6000","(02) 5550 1600"],"ans":0,"top":null}]},{"id":"cam","name":"Party Cam","icon":"📸","col":["#bf5af2","#9a2fd0"],"banner":"Party Cam: 8 new photos 📸","top":null,"map":null,"optStyle":null,"items":[{"t":"mc","top":"<div class=\"photo\"><div class=\"scene\">🎅🚌👋</div><div class=\"ptime\">Today 12:45 pm</div></div><div class=\"caption\">Look! Santa <span class=\"gap\">_______</span> off the bus.</div>","q":"Choose the verb for the caption.","why":"\"Look!\" means now. Use am / is / are + -ing.","hint":"Look! means it is happening now.","opts":["gets","are getting","is getting"],"ans":2},{"t":"swipe","top":"<div class=\"photo\"><div class=\"scene\">🧝🎁🧝</div><div class=\"ptime\">Last year</div></div><div class=\"caption\">Every year, the elves are wrapping the presents.</div>","q":"Santa checks the caption. Is it right (Nice) or wrong (Naughty)?","labels":["Naughty 👎","Nice 👍"],"a":0,"why":"Naughty! \"Every year\" is a habit: the elves wrap the presents.","hint":null},{"t":"mc","top":"<div class=\"photo\"><div class=\"scene\">👧🎶👦</div><div class=\"ptime\">Today 1:30 pm</div></div><div class=\"caption\">Right now, the kids <span class=\"gap\">_______</span> a Christmas song.</div>","q":"Choose the verb for the caption.","why":"\"Right now\" means now. Use are + -ing.","hint":"Right now means now.","opts":["sing","is singing","are singing"],"ans":2},{"t":"swipe","top":"<div class=\"photo\"><div class=\"scene\">🦌🥕</div><div class=\"ptime\">Book page</div></div><div class=\"caption\">Reindeer eat carrots.</div>","q":"Santa checks the caption. Is it right (Nice) or wrong (Naughty)?","labels":["Naughty 👎","Nice 👍"],"a":1,"why":"Nice! It is a fact, so use the simple present.","hint":null},{"t":"sort","q":"Habit or now? Tap the right box for each time word.","buckets":["🔁 Habit or fact","⏱️ Now"],"cards":[["Look!",1],["at the moment",1],["on Saturdays",0],["usually",0],["right now",1],["every year",0]],"why":"Habits: every year, usually, on Saturdays. Now: right now, at the moment, Look!","top":null,"hint":null},{"t":"mc","top":"<div class=\"photo\"><div class=\"scene\">🧴👃🎅</div><div class=\"ptime\">Today 12:30 pm</div></div><div class=\"caption\">Meryl <span class=\"gap\">_______</span> sunscreen on Santa's nose.</div>","q":"Choose the verb for the caption.","why":"The photo shows now. Use is + -ing.","hint":"It is happening in the photo.","opts":["puts","is putting","are putting"],"ans":1},{"t":"swipe","top":"<div class=\"photo\"><div class=\"scene\">🚌🕐</div><div class=\"ptime\">Timetable</div></div><div class=\"caption\">On Saturdays, the bus comes every 20 minutes.</div>","q":"Santa checks the caption. Is it right (Nice) or wrong (Naughty)?","labels":["Naughty 👎","Nice 👍"],"a":1,"why":"Nice! A timetable uses the simple present.","hint":null},{"t":"mc","top":"<div class=\"photo\"><div class=\"scene\">🎄🪑🙋</div><div class=\"ptime\">This week</div></div><div class=\"caption\">This week, Jojo <span class=\"gap\">_______</span> at the hall.</div>","q":"Choose the verb for the caption.","why":"\"This week\" is a short time. Use is + -ing.","hint":"This week is a short time.","opts":["helps","is helping","are helping"],"ans":1},{"t":"swipe","top":"<div class=\"photo\"><div class=\"scene\">🎅👋👧</div><div class=\"ptime\">Today 1:15 pm</div></div><div class=\"caption\">Look! Grace wave at the kids.</div>","q":"Santa checks the caption. Is it right (Nice) or wrong (Naughty)?","labels":["Naughty 👎","Nice 👍"],"a":0,"why":"Naughty! \"Look!\" means now: Grace is waving at the kids.","hint":null},{"t":"mc","top":"<div class=\"photo\"><div class=\"scene\">🎅❄️🏠</div><div class=\"ptime\">Christmas card</div></div><div class=\"caption\">Santa usually <span class=\"gap\">_______</span> at the North Pole.</div>","q":"Choose the verb for the caption.","why":"\"Usually\" is a habit. Use the simple present.","hint":"Usually is a habit.","opts":["lives","is living","living"],"ans":0}]},{"id":"voicemail","name":"Voicemail","icon":"📞","col":["#30d158","#16a33c"],"banner":"8 new voicemails 📞","top":null,"map":null,"optStyle":null,"items":[{"t":"mc","top":"<div class=\"vm\"><div class=\"vmhead\"><div class=\"vmav\">M</div><div><div class=\"vmwho\">Ms Chen</div><div class=\"vmlen\">Voicemail · 0:14</div></div></div><div class=\"vmbar\"><span class=\"vmplay\">▶</span><span class=\"vmwave\"></span></div><div class=\"vmtx\"><b>Transcript</b><br>Hi Sunny. The hall is <span class=\"gap\">_______</span> from the bus stop. Just cross the road.</div></div>","q":"Choose the expression for the gap.","why":"A stone's throw means only a very short walk away.","hint":"You just cross the road.","opts":["a stone's throw","out of the way","a bit of a hike"],"ans":0},{"t":"mc","top":"<div class=\"vm\"><div class=\"vmhead\"><div class=\"vmav\">G</div><div><div class=\"vmwho\">Grace</div><div class=\"vmlen\">Voicemail · 0:11</div></div></div><div class=\"vmbar\"><span class=\"vmplay\">▶</span><span class=\"vmwave\"></span></div><div class=\"vmtx\"><b>Transcript</b><br>My flat is <span class=\"gap\">_______</span> from the hall. About 3 kilometres.</div></div>","q":"Choose the expression for the gap.","why":"A fair way means quite far.","hint":"3 kilometres is quite far.","opts":["a stone's throw","right on my doorstep","a fair way"],"ans":2},{"t":"mc","top":"<div class=\"vm\"><div class=\"vmhead\"><div class=\"vmav\">M</div><div><div class=\"vmwho\">Meryl</div><div class=\"vmlen\">Voicemail · 0:16</div></div></div><div class=\"vmbar\"><span class=\"vmplay\">▶</span><span class=\"vmwave\"></span></div><div class=\"vmtx\"><b>Transcript</b><br>The Christmas tree farm is <span class=\"gap\">_______</span>. It's two hours from Sydney, with no bus.</div></div>","q":"Choose the expression for the gap.","why":"Out of the way means far from the main places, not easy to get to.","hint":"Two hours, and no bus.","opts":["a stone's throw","out of the way","right on my doorstep"],"ans":1},{"t":"pairs","q":"Memory match! Tap an expression, then tap its meaning.","L":["a stone's throw","a fair way","out of the way","chockers"],"R":["a very short walk away","quite far","far from the main places","very full of people"],"why":"All four pairs matched.","showR":[3,0,1,2],"top":null,"hint":null},{"t":"swipe","top":"<div class=\"vm\"><div class=\"vmhead\"><div class=\"vmav\">B</div><div><div class=\"vmwho\">Bill</div><div class=\"vmlen\">Voicemail · 0:08</div></div></div><div class=\"vmbar\"><span class=\"vmplay\">▶</span><span class=\"vmwave\"></span></div><div class=\"vmtx\"><b>Transcript</b><br>The bus was chockers, so I sat in an empty row at the back.</div></div>","q":"Does this voicemail make sense?","labels":["Doesn't make sense ✗","Makes sense ✓"],"a":0,"why":"Chockers means very full. An empty row does not make sense.","hint":null},{"t":"mc","top":"<div class=\"vm\"><div class=\"vmhead\"><div class=\"vmav\">G</div><div><div class=\"vmwho\">Grace</div><div class=\"vmlen\">Voicemail · 0:09</div></div></div><div class=\"vmbar\"><span class=\"vmplay\">▶</span><span class=\"vmwave\"></span></div><div class=\"vmtx\"><b>Transcript</b><br>The bus was <span class=\"gap\">_______</span>. I stood all the way.</div></div>","q":"Choose the expression for the gap.","why":"Chockers means very full.","hint":"There were no seats.","opts":["handy","a fair way","chockers"],"ans":2},{"t":"mc","top":"<div class=\"vm\"><div class=\"vmhead\"><div class=\"vmav\">C</div><div><div class=\"vmwho\">Cici</div><div class=\"vmlen\">Voicemail · 0:12</div></div></div><div class=\"vmbar\"><span class=\"vmplay\">▶</span><span class=\"vmwave\"></span></div><div class=\"vmtx\"><b>Transcript</b><br>Thanks for the extra chairs, Sunny. You're <span class=\"gap\">_______</span>!</div></div>","q":"Choose the expression for the gap.","why":"A lifesaver is someone who helps a lot.","hint":"Sunny helps a lot.","opts":["a lifesaver","out of the way","chockers"],"ans":0},{"t":"mc","top":"<div class=\"vm\"><div class=\"vmhead\"><div class=\"vmav\">R</div><div><div class=\"vmwho\">Rachel</div><div class=\"vmlen\">Voicemail · 0:13</div></div></div><div class=\"vmbar\"><span class=\"vmplay\">▶</span><span class=\"vmwave\"></span></div><div class=\"vmtx\"><b>Transcript</b><br>That bakery is <span class=\"gap\">_______</span> for pavlova. I always buy it there.</div></div>","q":"Choose the expression for the gap.","why":"My go-to is the place I always use first.","hint":"\"I always buy it there.\"","opts":["a fair way","my go-to","a stone's throw"],"ans":1},{"t":"pairs","q":"Memory match! Tap an expression, then tap its meaning.","L":["a lifesaver","my go-to","you can't go wrong","right on my doorstep"],"R":["someone who helps a lot","the place I always use first","it always works","next to my home"],"why":"All four pairs matched.","showR":[3,0,1,2],"top":null,"hint":null},{"t":"swipe","top":"<div class=\"vm\"><div class=\"vmhead\"><div class=\"vmav\">L</div><div><div class=\"vmwho\">Liu</div><div class=\"vmlen\">Voicemail · 0:07</div></div></div><div class=\"vmbar\"><span class=\"vmplay\">▶</span><span class=\"vmwave\"></span></div><div class=\"vmtx\"><b>Transcript</b><br>That café is my go-to. I go there every morning for a coffee.</div></div>","q":"Does this voicemail make sense?","labels":["Doesn't make sense ✗","Makes sense ✓"],"a":1,"why":"My go-to is the place you always use first. It makes sense.","hint":null}]},{"id":"maps","name":"Maps","icon":"🗺️","col":["#64d2ff","#1e9ad6"],"banner":"Maps: the party is near you 📍","top":null,"map":"plain","optStyle":null,"items":[{"t":"tap","q":"Tap the place next to the park.","a":"hall","why":"The hall is next to the park.","hint":"Find the park. What is beside it?","top":null},{"t":"mc","q":"The café is ___ the bus stop.","why":"The café and the bus stop are side by side.","hint":"They are side by side.","fill":true,"opts":["opposite","next to","between"],"ans":1,"top":null},{"t":"tap","q":"Tap the place opposite the hall.","a":"bus","why":"The bus stop is across Miller Street from the hall.","hint":"Look across Miller Street from the hall.","top":null},{"t":"mc","q":"The chemist is on the corner of Palmer Street and ___.","why":"The chemist touches Palmer Street and Amherst Street.","hint":"Look at the streets next to the chemist.","fill":true,"opts":["Ernest Street","Miller Street","Amherst Street"],"ans":2,"top":null},{"t":"tap","q":"Tap the place on the corner of Miller Street and Ernest Street.","a":"toy","why":"The toy shop is on the corner of Miller Street and Ernest Street.","hint":"Find where Miller Street meets Ernest Street.","top":null},{"t":"mc","q":"The pizza shop is ___ the café.","why":"The pizza shop is across Palmer Street from the café.","hint":"Look across Palmer Street.","fill":true,"opts":["opposite","next to","on the corner of"],"ans":0,"top":null},{"t":"tap","q":"Tap the place opposite the post office.","a":"library","why":"The library is across Palmer Street from the post office.","hint":"Look across Palmer Street from the post office.","top":null},{"t":"tap","q":"Tap the place between the chemist and Miller Street.","a":"tree","why":"The tree stall is between the chemist and Miller Street.","hint":"Find the chemist. Look towards Miller Street.","top":null},{"t":"mc","q":"The gift shop is ___ Ernest Street.","why":"Use \"on\" with a street.","hint":"on + street, in + suburb.","fill":true,"opts":["in","at","on"],"ans":2,"top":null},{"t":"tap","q":"Tap the place next to the toy shop.","a":"post","why":"The post office is next to the toy shop.","hint":"Find the toy shop. What is beside it?","top":null}]},{"id":"nav","name":"Sleigh Nav","icon":"🛷","col":["#ff375f","#d01a45"],"banner":"Sleigh Nav: you are at the bus stop ★","top":null,"map":"nav","optStyle":null,"items":[{"t":"tap","q":"Start at the bus stop ★. Go along Miller Street. Cross Amherst Street. It's on your left, on the corner. Tap it.","a":"tree","why":"Walk north on Miller Street. The tree stall is on your left.","hint":"Walk up the map. Left is the west side.","top":null},{"t":"mc","q":"\"Go past the café.\" What does it mean?","why":"Go past means walk by it and keep going.","hint":"You do not stop.","opts":["Stop at the café and wait there.","Walk by the café and keep going.","Go into the café for a coffee."],"ans":1,"top":null},{"t":"tap","q":"Start at the bus stop ★. Go along Miller Street. Cross Ernest Street. It's on your right, on the corner. Tap it.","a":"toy","why":"Walk south on Miller Street. The toy shop is on your right.","hint":"Walk down the map. Your right is the west side.","top":null},{"t":"route","q":"Santa has 3 presents. Tap the places in this order. 1: the place next to the bus stop. 2: the place opposite it, across Palmer Street. 3: the place on the corner of Palmer Street and Amherst Street.","seq":["cafe","pizza","chemist"],"why":"Café, then pizza shop, then chemist. All the presents are delivered!","hint":"Find number 1 first: next to the bus stop ★.","top":null},{"t":"tap","q":"Start at the bus stop ★. Go along Miller Street to Amherst Street. Turn left into Amherst Street. It's on your right, on the corner of Palmer Street. Tap it.","a":"chemist","why":"You walk west on Amherst Street. The chemist is on your right.","hint":"Turn left at Amherst Street. Look across the road.","top":null},{"t":"mc","q":"\"Cross the road.\" What does it mean?","why":"Cross means go to the other side.","hint":"Think of a pedestrian crossing.","opts":["Walk along the road to the end of it.","Stop and wait next to the road.","Go to the other side of the road."],"ans":2,"top":null},{"t":"order","q":"Put the directions in order. Start at the bus stop ★. Go to the toy shop.","chips":["Go along Miller Street.","Cross Ernest Street.","It's on your right, on the corner."],"why":"Go along Miller Street. Cross Ernest Street. It's on your right, on the corner.","hint":"Start with \"Go along\".","show":[2,0,1],"top":null},{"t":"tap","q":"Start at the bus stop ★. Go past the café to Palmer Street. Cross Palmer Street. It's right in front of you. Tap it.","a":"pizza","why":"The pizza shop is across Palmer Street from the café.","hint":"Walk left on the map, past the café.","top":null},{"t":"route","q":"Santa has 3 more presents. Tap the places in this order. 1: the place on the corner of Miller Street and Ernest Street. 2: the place next to it. 3: the place opposite that, across Palmer Street.","seq":["toy","post","library"],"why":"Toy shop, then post office, then library. Ho, ho, ho!","hint":"Find where Miller Street meets Ernest Street.","top":null},{"t":"tap","q":"Start at the bus stop ★. Go along Miller Street to Ernest Street. Turn right into Ernest Street. Go past the toy shop. It's on your left, on the corner of Palmer Street. Tap it.","a":"post","why":"Walk west on Ernest Street. After the toy shop, the post office is on your left.","hint":"Turn right at Ernest Street. Keep the toy shop on your left.","top":null}]},{"id":"trip","name":"TripMate","icon":"🚌","col":["#ffd60a","#e0a800"],"banner":"TripMate: your trip home after the party 🚌","top":"<div class=\"tt\"><div class=\"tthead\">Route 99 · Saturday timetable</div><div class=\"ttsub\">Practice bus · Crows Nest to Cammeray</div>\n      <div class=\"ttw\"><table><tr><th>Stop</th><th>Bus 1</th><th>Bus 2</th><th>Bus 3</th><th>Bus 4</th></tr>\n      <tr><td>Willoughby Road, Crows Nest</td><td>12:40</td><td>1:00</td><td>1:20</td><td>1:40</td></tr>\n      <tr><td>Falcon Street, Crows Nest</td><td>12:44</td><td>1:04</td><td>1:24</td><td>1:44</td></tr>\n      <tr><td>Miller Street, Cammeray</td><td>12:52</td><td>1:12</td><td>1:32</td><td>1:52</td></tr></table></div>\n      <p class=\"note\">All times are pm.</p></div>","map":null,"optStyle":null,"items":[{"t":"mc","q":"What is the frequency of Route 99 on Saturdays?","why":"12:40, 1:00, 1:20, 1:40: a bus every 20 minutes.","hint":"Look at the times in the first row.","opts":["every 20 minutes","every 12 minutes","every hour"],"ans":0,"top":null},{"t":"dial","q":"Tifa catches Bus 2 at Willoughby Road. When does it arrive at Miller Street? Set the clock.","kind":"time","ans":792,"start":720,"why":"Bus 2 arrives at Miller Street at 1:12 pm.","top":null,"hint":null},{"t":"mc","q":"Liu needs to be at the hall by 1:40. Which is the last bus Liu can catch from Willoughby Road?","why":"Bus 3 arrives at 1:32. Bus 4 arrives at 1:52, too late.","hint":"Look at the Miller Street arrival times.","opts":["Bus 4 at 1:40 pm","Bus 3 at 1:20 pm","Bus 2 at 1:00 pm"],"ans":1,"top":null},{"t":"dial","q":"Bus 4 is the last bus. When does it leave Falcon Street? Set the clock.","kind":"time","ans":824,"start":780,"why":"Bus 4 leaves Falcon Street at 1:44 pm.","top":null,"hint":null},{"t":"mc","q":"On a timetable, \"departs\" means:","why":"Departs means leaves.","hint":"The opposite of arrives.","opts":["arrives","leaves","stops for a long time"],"ans":1,"top":null},{"t":"sort","q":"Public or private transport? Tap the right box.","buckets":["🚆 Public","🚗 Private"],"cards":[["light rail",0],["a friend's car",1],["a taxi",1],["the ferry",0],["the bus",0],["a rideshare car",1]],"why":"Public: light rail, ferry, bus. Private: rideshare car, taxi, a friend's car.","top":null,"hint":null},{"t":"mc","q":"Mrs Lee is 72 and has an NSW Seniors Card. Which Opal card is best?","why":"NSW Seniors Card holders can use a Gold Senior/Pensioner Opal card.","hint":"Think of a gold card.","opts":["a Gold Senior/Pensioner Opal card","a Child/Youth Opal card","an Adult Opal card"],"ans":0,"top":null},{"t":"mc","q":"Baby Leo is 2. How does Leo travel on the bus?","why":"Children under 4 travel free.","hint":"Children under 4 do not pay.","opts":["with a Child/Youth Opal card","with a Concession Opal card","free, with no card"],"ans":2,"top":null},{"t":"dial","q":"Scarlett's Opal card has $1.20 on it. The fare is $3.20. How much does Scarlett need to top up?","kind":"money","ans":2,"start":0,"min":0,"max":10,"step":0.2,"why":"$3.20 − $1.20 = $2.00. Top up $2.00 or more.","top":null,"hint":null},{"t":"dial","q":"How many minutes is the trip from Willoughby Road to Miller Street?","kind":"num","ans":12,"start":5,"min":1,"max":30,"step":1,"unit":"minutes","why":"12:40 to 12:52 is 12 minutes.","top":null,"hint":null}]},{"id":"gift","name":"Gift Finder","icon":"🎁","col":["#ff6b6b","#e03a3a"],"banner":"Gift Finder: get the big tree to the hall 🎄","top":"<div class=\"cmp\"><div class=\"cmphead\">Get the big Christmas tree to the hall</div><div class=\"ttsub\">Practice prices</div>\n      <div class=\"gopt\"><div class=\"oe\">🚲</div><div><b>Cargo bike delivery</b><br>20 minutes · $12 · ⭐⭐⭐⭐</div></div>\n      <div class=\"gopt\"><div class=\"oe\">🚐</div><div><b>Taxi van</b><br>15 minutes · $30 · ⭐⭐⭐</div></div>\n      <div class=\"gopt\"><div class=\"oe\">🛒</div><div><b>Trolley walk</b><br>35 minutes · free · ⭐⭐</div></div>\n      <p class=\"note\">Sunny's home is 4 km from the hall. Grace's home is 2 km from the hall.</p></div>","map":null,"optStyle":null,"items":[{"t":"mc","q":"Which way is the cheapest?","why":"The trolley walk is free.","hint":"Look for \"free\".","opts":["the trolley walk","the taxi van","the cargo bike delivery"],"ans":0,"top":null},{"t":"mc","q":"Which way is the fastest?","why":"15 minutes is the shortest time.","hint":"Look for the shortest time.","opts":["the cargo bike","the taxi van","the trolley walk"],"ans":1,"top":null},{"t":"spot","q":"This sentence has a mistake. Tap the wrong words.","words":["The cargo bike","is","more cheap","than","the taxi van."],"bad":2,"fixq":"Choose the correct words.","why":"Short word: cheap, cheaper, the cheapest.","hint":"Look at the comparing words.","fixOpts":["more cheaper","cheaper","cheapest"],"fixAns":1,"top":null},{"t":"order","words":true,"q":"Build the sentence.","chips":["The taxi van","is","the","fastest."],"why":"The taxi van is the fastest.","hint":"Start with \"The taxi van\".","show":[3,0,2,1],"top":null},{"t":"mc","q":"The trolley walk is the ___ way.","why":"Three things: the + -est.","hint":"Three things: use the + -est.","fill":true,"opts":["slower","most slow","slowest"],"ans":2,"top":null},{"t":"spot","q":"This sentence has a mistake. Tap the wrong word.","words":["The cargo bike","is","the","goodest","way."],"bad":3,"fixq":"Choose the correct word.","why":"good, better, the best.","hint":"good, better, ...","fixOpts":["best","better","most good"],"fixAns":0,"top":null},{"t":"mc","q":"The taxi van is ___ expensive than the cargo bike.","why":"Long word: more expensive than.","hint":"Long word + than: more.","fill":true,"opts":["most","the most","more"],"ans":2,"top":null},{"t":"spot","q":"This sentence has a mistake. Tap the wrong word.","words":["It","take","20 minutes","by","cargo bike."],"bad":1,"fixq":"Choose the correct word.","why":"It takes + time.","hint":"It + takes.","fixOpts":["taking","to take","takes"],"fixAns":2,"top":null},{"t":"order","words":true,"q":"Build the sentence.","chips":["Sunny's home","is","further","from the hall","than Grace's home."],"why":"Sunny's home is further from the hall than Grace's home. (4 km is further than 2 km.)","hint":"Start with \"Sunny's home\".","show":[4,0,1,2,3],"top":null},{"t":"mc","q":"The cargo bike has four stars. It is the ___ way.","why":"good, better, the best.","hint":"good, better, ...","fill":true,"opts":["better","best","goodest"],"ans":1,"top":null}]},{"id":"poll","name":"Poll","icon":"🗳️","col":["#2fb5a5","#1a8c7f"],"banner":"Poll: Boxing Day at Balmoral Beach 🏖️","top":"<div class=\"poll\"><div class=\"cmphead\">Boxing Day at Balmoral Beach: how do we get there?</div>\n      <div class=\"rev\"><b>Yuko 🚌</b><br>I'm going to catch the bus. It's cheap with my Opal card, and I can relax. But the walk from the bus stop is a bit of a hike, and it's very hot.</div>\n      <div class=\"rev\"><b>Skye 🚗</b><br>I'm going to drive. The car is comfortable, and I can take the esky and the beach chairs. But parking near the beach is a pain on Boxing Day, and it costs $40.</div>\n      <div class=\"bars\"><div>🚌 Bus <span style=\"width:64%\"></span> 9 votes</div><div>🚗 Car <span style=\"width:36%\"></span> 5 votes</div></div></div>","map":null,"optStyle":null,"items":[{"t":"sort","q":"Read Yuko's review. Good point or bad point about the bus?","buckets":["👍 Advantage","👎 Disadvantage"],"cards":[["It's very hot.",1],["It's cheap with an Opal card.",0],["Yuko can relax.",0],["The walk is a bit of a hike.",1]],"why":"Advantages: cheap, relax. Disadvantages: the long walk, the heat.","top":null,"hint":null},{"t":"sort","q":"Read Skye's review. Good point or bad point about the car?","buckets":["👍 Advantage","👎 Disadvantage"],"cards":[["Skye can take the esky.",0],["The car is comfortable.",0],["Parking is a pain.",1],["It costs $40.",1]],"why":"Advantages: comfortable, the esky. Disadvantages: parking, $40.","top":null,"hint":null},{"t":"mc","q":"Skye is going to drive ___ the car is comfortable.","why":"Because gives a reason.","hint":"Why is Skye going to drive?","fill":true,"opts":["but","because","so"],"ans":1,"top":null},{"t":"mc","q":"The bus is cheap, ___ the walk is a bit of a hike.","why":"But shows a different idea: a good point, then a bad point.","hint":"Good point, then bad point.","fill":true,"opts":["but","so","and"],"ans":0,"top":null},{"t":"order","words":true,"q":"Build the sentence.","chips":["I catch the bus","because","it's","cheap."],"why":"I catch the bus because it's cheap. (No comma before because.)","hint":"Start with \"I catch the bus\".","show":[2,0,3,1],"top":null},{"t":"mc","q":"Parking costs $40, ___ Yuko is going to catch the bus.","why":"So gives a result.","hint":"What happens because parking is expensive?","fill":true,"opts":["so","because","but"],"ans":0,"top":null},{"t":"mc","q":"The car is comfortable, ___ it has air conditioning.","why":"And adds a similar idea: two good points.","hint":"Two good points.","fill":true,"opts":["but","so","and"],"ans":2,"top":null},{"t":"order","words":true,"q":"Build the sentence.","chips":["Parking is hard,","so","we catch","the bus."],"why":"Parking is hard, so we catch the bus.","hint":"Start with \"Parking is hard,\".","show":[3,1,0,2],"top":null},{"t":"mc","q":"On a form, \"advantages\" means:","why":"Advantages are good points. Disadvantages are bad points.","hint":"The opposite of disadvantages.","opts":["bad points","times and prices","good points"],"ans":2,"top":null},{"t":"mc","q":"Yuko says: \"I'm going to Balmoral on Boxing Day.\" What is the best reply to keep it going?","why":"A short question keeps the talk going.","hint":"Choose the reply with a question.","opts":["Balmoral is a beach. In Mosman, I think.","Oh, nice! Are you going to swim?","OK. I'm going to stay home."],"ans":1,"top":null}]}];
+const PLACES = [["chemist","Chemist","💊",216,60,68,84],["tree","Tree stall","🎄",290,60,66,84],["bakery","Bakery","🥐",486,60,68,84],["pizza","Pizza","🍕",96,226,68,90],["cafe","Café","☕",216,226,68,90],["bus","Bus stop","🚏",290,226,66,90],["hall","Hall","🎅",410,198,70,136],["park","Park","🌳",486,198,68,136],["library","Library","📚",96,388,68,84],["post","Post office","📮",216,388,68,84],["toy","Toy shop","🧸",290,388,66,84],["gift","Gift shop","🎁",486,388,68,84]];
+const SIZES = [22, 28, 34, 42];
+const KEYNAME = CFG.keyname;
+const CODE = CFG.code;
+const TOTAL = APPS.reduce((n, a) => n + a.items.length, 0);
+const $ = (s, el = document) => el.querySelector(s);
+const phone = $('#phone'), scr = $('#scr');
+const isIOS = /iP(hone|od|ad)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const de = document.documentElement;
+const canFS = !isIOS && !!(de.requestFullscreen || de.webkitRequestFullscreen);
+const standalone = !!(navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches));
+const coarse = window.matchMedia && matchMedia('(pointer: coarse)').matches;
+const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function fresh() { return { v: 1, started: false, unlocked: false, size: 1, apps: {} }; }
+let storageOK = true;
+try { const k = '__t' + Date.now(); localStorage.setItem(k, '1'); localStorage.removeItem(k); } catch (e) { storageOK = false; }
+let S = fresh();
+try { const raw = storageOK && localStorage.getItem(KEYNAME); if (raw) { const o = JSON.parse(raw); if (o && o.v === 1) S = Object.assign(fresh(), o); } } catch (e) {}
+function save() { if (!storageOK) return; try { localStorage.setItem(KEYNAME, JSON.stringify(S)); } catch (e) {} }
+function A(id) { return S.apps[id] || (S.apps[id] = { i: 0, w: 0, first: [], done: false, score: 0 }); }
+function doneCount() { return APPS.filter(a => S.apps[a.id] && S.apps[a.id].done).length; }
+function clockAP() { const m = CFG.start + 5 * doneCount(); return clock() + (Math.floor(m / 60) >= 12 ? ' pm' : ' am'); }
+function clock(extra) { const m = CFG.start + 5 * (extra === undefined ? doneCount() : extra); let h = Math.floor(m / 60) % 12; if (h === 0) h = 12; return h + ':' + String(m % 60).padStart(2, '0'); }
+function setSize() { phone.style.setProperty('--fs', SIZES[S.size] + 'px'); }
+function setTime() { $('#sbtime').textContent = clock(); }
+function esc(t) { return String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]); }
+function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toast.h); toast.h = setTimeout(() => el.classList.remove('show'), 2600); }
+function light(on) { phone.classList.toggle('light', !!on); hideBanner(); }
+function hideBanner() { const b = document.getElementById('banner'); if (b) { b.classList.remove('show'); clearTimeout(banner.h); } }
+
+/* full screen */
+function inFS() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
+function goFS() { const f = de.requestFullscreen || de.webkitRequestFullscreen; if (f) { try { const p = f.call(de); if (p && p.catch) p.catch(() => {}); } catch (e) {} } }
+function exitFS() { const f = document.exitFullscreen || document.webkitExitFullscreen; if (f) { try { const p = f.call(document); if (p && p.catch) p.catch(() => {}); } catch (e) {} } }
+$('#fsbtn').addEventListener('click', () => {
+  if (canFS) { inFS() ? exitFS() : goFS(); return; }
+  sheet(`<div class="big">📲</div><h2>Full screen on iPhone</h2>
+    <p>iPhone cannot make a web page full screen. Add the game to your Home Screen. Then it opens full screen.</p>
+    <p><b>1.</b> Tap the Share button <b>⬆︎</b> at the bottom of Safari.</p>
+    <p><b>2.</b> Tap <b>Add to Home Screen</b>.</p>
+    <p><b>3.</b> Tap <b>Add</b>. Open the game from your Home Screen.</p>
+    <p>Your progress is saved.</p><button class="btn" data-close>OK</button>`);
+});
+if (standalone) $('#fsbtn').style.display = 'none';
+
+/* sheet */
+function sheet(html, onclick) {
+  closeSheet();
+  const bg = document.createElement('div'); bg.className = 'sheetbg'; bg.id = 'sheetbg';
+  bg.innerHTML = `<div class="sheet" role="dialog">${html}</div>`;
+  bg.addEventListener('click', e => { if (e.target === bg || e.target.closest('[data-close]')) { closeSheet(); return; } if (onclick) onclick(e); });
+  phone.appendChild(bg);
+}
+function closeSheet() { const b = $('#sheetbg'); if (b) b.remove(); }
+
+function banner(app) {
+  const el = $('#banner');
+  el.innerHTML = `<div class="ni" style="background:linear-gradient(135deg,${app.col[0]},${app.col[1]})">${app.icon}</div><div class="bt"><b>${esc(app.name)} · now</b>${esc(app.banner)}</div>`;
+  el.classList.add('show'); clearTimeout(banner.h); banner.h = setTimeout(() => el.classList.remove('show'), 3800);
+  el.onclick = () => { el.classList.remove('show'); openApp(APPS.indexOf(app)); };
+}
+
+/* two-tap confirm */
+function twoTap(btn, label, fn) { if (btn.dataset.armed) { fn(); return; } btn.dataset.armed = '1'; const old = btn.textContent; btn.textContent = label; setTimeout(() => { if (btn.isConnected) { delete btn.dataset.armed; btn.textContent = old; } }, 4000); }
+function restart() { const size = S.size; try { localStorage.removeItem(KEYNAME); } catch (e) {} S = fresh(); S.size = size; save(); closeSheet(); setTime(); intro(); }
+
+/* ---------- intro ---------- */
+function intro() {
+  light(false); setTime();
+  const n = doneCount();
+  const back = S.started ? `<div class="wb"><b>👋 Welcome back!</b><p>You finished ${n} of ${APPS.length} apps. Your progress is saved.</p>
+    <button class="btn green" id="keep">Keep going</button><button class="btn alt" id="again">Start again</button></div>` : '';
+  scr.className = 'scr intro wall';
+  scr.innerHTML = `<div class="card">${storageOK ? '' : '<div class="warnbox">This browser cannot save your progress. The game still works.</div>'}${back}
+    <div class="big">${CFG.big}</div><h1>The lost phone</h1><div class="sub">VU23562 · ${CFG.lessonTag} · ${CFG.lesson}</div>
+    ${CFG.intro.map(p => `<p>${p}</p>`).join('')}
+    <p>Answer the questions to open the next app. Tap <b>Aa</b> to make the words bigger.</p>
+    ${S.started ? '' : '<button class="btn green" id="go">Pick up the phone</button>'}</div>`;
+  const go = $('#go'); if (go) go.onclick = () => { if (canFS && coarse) goFS(); S.started = true; save(); lock(); };
+  const keep = $('#keep'); if (keep) keep.onclick = () => { if (canFS && coarse) goFS(); S.unlocked ? home() : lock(); };
+  const again = $('#again'); if (again) again.onclick = () => twoTap(again, 'Tap again to start again', restart);
+}
+
+/* ---------- lock ---------- */
+function lock() {
+  light(false); setTime();
+  scr.className = 'scr lock wall';
+  scr.innerHTML = `<div class="date">${CFG.date}</div><div class="clock">${clock()}</div>
+    <div class="notes">${CFG.notis.map(n => `<div class="noti"><div class="ni" style="background:${n[1]}">${n[0]}</div><div class="nt"><div class="nh">${n[2]} <span>${n[3]}</span></div><div class="nb">${n[4]}</div></div></div>`).join('')}</div>
+    <button class="unlock" id="un">🔓 Tap to unlock</button>`;
+  $('#un').onclick = pass;
+}
+let code = '', bad = 0;
+function pass() {
+  code = '';
+  scr.className = 'scr pass wall';
+  const k = [['1', ''], ['2', 'ABC'], ['3', 'DEF'], ['4', 'GHI'], ['5', 'JKL'], ['6', 'MNO'], ['7', 'PQRS'], ['8', 'TUV'], ['9', 'WXYZ']];
+  const tags = CFG.clues ? `<div class="sticky" style="margin:0 0 12px;transform:none">${CFG.lockTitle}</div><div class="tags">${CFG.clues.map((c, i) => `<button class="tag" data-tag="${i}">${c[0]}<small>No. ${i + 1}</small></button>`).join('')}</div><div id="clue"></div>` : '';
+  scr.innerHTML = `<h2>Enter Passcode</h2>${tags}<div class="dots" id="dots"><i></i><i></i><i></i><i></i></div>
+    <div class="keys">${k.map(x => `<button class="key" data-d="${x[0]}">${x[0]}<small>${x[1]}</small></button>`).join('')}
+    <button class="key txt" id="hint">Hint</button><button class="key" data-d="0">0</button><button class="key txt" id="del">Delete</button></div>
+    <div id="sticky"></div><button class="passback" id="pb">Back</button>`;
+  scr.querySelectorAll('[data-d]').forEach(b => b.onclick = () => press(b.dataset.d));
+  scr.querySelectorAll('[data-tag]').forEach(b => b.onclick = () => showClue(+b.dataset.tag));
+  $('#del').onclick = () => { code = code.slice(0, -1); dots(); };
+  $('#hint').onclick = showHint;
+  $('#pb').onclick = lock;
+  if (bad >= 1) showHint();
+}
+function showClue(i) {
+  document.querySelectorAll('[data-tag]').forEach(t => t.classList.toggle('on', +t.dataset.tag === i));
+  const c = CFG.clues[i];
+  $('#clue').innerHTML = `<div class="clue">${c[0]} Number ${i + 1}: ${c[1]}${bad >= 2 ? `<span class="ans">Answer: ${c[2]}</span>` : ''}</div>`;
+}
+function showHint() { $('#sticky').innerHTML = `<div class="sticky">${CFG.hint}${bad >= (CFG.clues ? 4 : 3) ? '<br>' + CFG.hint3 : ''}</div>`; }
+function dots() { document.querySelectorAll('#dots i').forEach((d, i) => d.classList.toggle('on', i < code.length)); }
+function press(d) {
+  if (code.length >= 4) return;
+  code += d; dots();
+  if (code.length === 4) setTimeout(() => {
+    if (code === CODE) { S.unlocked = true; save(); home(true); }
+    else { bad++; const on = document.querySelector('.tag.on'); if (on) showClue(+on.dataset.tag); const el = $('#dots'); el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); code = ''; setTimeout(dots, 300); showHint(); }
+  }, 180);
+}
+
+/* ---------- home ---------- */
+function home(first) {
+  light(false); closeSheet(); setTime();
+  const n = doneCount();
+  scr.className = 'scr home wall';
+  scr.innerHTML = `<div class="hscroll"><div class="widget"><div class="wt">${CFG.goal}</div>
+    <div class="ws">${CFG.deadline} · now ${clockAP()} · ${n} of ${APPS.length} apps</div>
+    <div class="bar"><span style="width:${Math.round(n / APPS.length * 100)}%"></span></div></div>
+    <div class="grid">${APPS.map((a, i) => {
+      const st = S.apps[a.id] || {}; const locked = i > n; const cls = st.done ? 'done' : locked ? 'locked' : 'next';
+      const badge = st.done ? '<span class="badge done">✓</span>' : locked ? '<span class="badge lk">🔒</span>' : '<span class="badge">1</span>';
+      return `<button class="app ${cls}" data-i="${i}" aria-label="${esc(a.name)}${locked ? ', locked' : ''}"><div class="ico" style="background:linear-gradient(135deg,${a.col[0]},${a.col[1]})">${a.icon}${badge}</div><div class="lab">${esc(a.name)}</div></button>`;
+    }).join('')}</div></div>
+    <div class="dock"><button class="app" id="set" aria-label="Settings"><div class="ico" style="background:linear-gradient(135deg,#9a9aa0,#6c6c72)">⚙️</div></button>
+    <button class="app" id="help" aria-label="Help"><div class="ico" style="background:linear-gradient(135deg,#ffd60a,#ff9f0a)">❓</div></button>
+    ${n === APPS.length ? `<button class="app" id="run" aria-label="${CFG.runLabel}"><div class="ico" style="background:linear-gradient(135deg,#ff453a,#1f9d47)">${CFG.runIcon}</div></button>` : ''}</div>`;
+  scr.querySelectorAll('.grid .app').forEach(b => b.onclick = () => openApp(+b.dataset.i));
+  $('#set').onclick = settings; $('#help').onclick = help;
+  const run = $('#run'); if (run) run.onclick = finale;
+  if (n < APPS.length) setTimeout(() => banner(APPS[n]), first ? 500 : 350);
+}
+function help() {
+  sheet(`<div class="big">🧝</div><h2>How to play</h2>
+    <p>Open the app with the red <b>1</b>. Answer the questions.</p>
+    <p>Each app opens the next app. The clock moves on 5 minutes.</p>
+    <p>${CFG.helpGoal}</p>
+    <p>Wrong answer? Read the hint and try again.</p>
+    <p>Tap <b>Aa</b> to change the size of the words.</p>
+    <button class="btn" data-close>OK</button>`);
+}
+function settings() {
+  sheet(`<h2>⚙️ Settings</h2>
+    <div class="srow"><div class="sl">Text size</div><div class="sizes">${SIZES.map((s, i) => `<button data-s="${i}" class="${i === S.size ? 'on' : ''}" style="font-size:${16 + i * 5}px">Aa</button>`).join('')}</div></div>
+    <div class="srow"><div class="sl">Full screen</div><button class="btn alt" id="sfs">${canFS ? (inFS() ? 'Exit full screen' : 'Full screen') : 'How to make it full screen'}</button></div>
+    <div class="srow"><div class="sl">Start the game again</div><button class="btn warn" id="sre">Start again</button></div>
+    <div class="srow"><div class="sl">About</div><p>${esc(CFG.about)}</p></div>
+    <button class="btn" data-close>Done</button>`, e => {
+    const b = e.target.closest('[data-s]'); if (b) { S.size = +b.dataset.s; setSize(); save(); settings(); return; }
+    if (e.target.closest('#sfs')) { closeSheet(); $('#fsbtn').click(); return; }
+    const r = e.target.closest('#sre'); if (r) twoTap(r, 'Tap again to start again', restart);
+  });
+}
+
+/* ---------- app ---------- */
+let cur = null; // { a, idx, st, practice, answered }
+function openApp(i) {
+  const n = doneCount(); const a = APPS[i];
+  if (i > n) { toast(`🔒 Finish ${APPS[n].name} first.`); return; }
+  if (S.apps[a.id] && S.apps[a.id].done) {
+    const st = S.apps[a.id];
+    sheet(`<div class="big">${a.icon}</div><h2>${esc(a.name)}: finished ✓</h2><p>${st.score} of ${a.items.length} right the first time.</p>
+      <button class="btn" id="prac">Practise this app again</button><button class="btn alt" data-close>Close</button>`, e => {
+      if (e.target.closest('#prac')) { closeSheet(); runApp(i, true); }
+    });
+    return;
+  }
+  runApp(i, false);
+}
+function runApp(i, practice) {
+  const a = APPS[i];
+  cur = { a, i, practice, st: practice ? { i: 0, w: 0, first: [] } : A(a.id), answered: false };
+  if (cur.st.i >= a.items.length) cur.st.i = a.items.length - 1;
+  light(true);
+  scr.className = 'scr appv';
+  scr.innerHTML = `<div class="ahead"><button class="back" id="back">‹ Home</button>
+    <div class="t"><span class="mi" style="background:linear-gradient(135deg,${a.col[0]},${a.col[1]})">${a.icon}</span><span>${esc(a.name)}</span></div>
+    <button class="aa" id="aa" aria-label="Text size">Aa</button></div>
+    <div class="split"><div class="ptop" id="ptop"></div><div class="grip"></div><div class="pq" id="pq"></div></div>`;
+  $('#back').onclick = () => home();
+  $('#aa').onclick = () => { S.size = (S.size + 1) % SIZES.length; setSize(); save(); toast(`Text size ${S.size + 1} of ${SIZES.length}`); };
+  item(true);
+}
+function mapSvg(nav) {
+  const st = (x, y, w, h) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#d6cebd"/>`;
+  const lab = (t, x, y, rot) => `<text x="${x}" y="${y}" ${rot ? `transform="rotate(-90 ${x} ${y})"` : ''} text-anchor="middle" dominant-baseline="middle" font-size="16" font-style="italic" font-weight="600" fill="#5b5446">${t}</text>`;
+  let s = `<svg viewBox="0 0 560 520" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,Segoe UI,Roboto,Arial,sans-serif" role="img" aria-label="Practice map of Cammeray">
+    <rect width="560" height="520" fill="#efece3"/>`;
+  [[0, 0, 170, 150], [210, 0, 150, 150], [404, 0, 156, 150], [0, 190, 170, 150], [210, 190, 150, 150], [404, 190, 156, 150], [0, 380, 170, 140], [210, 380, 150, 140], [404, 380, 156, 140]]
+    .forEach(b => s += `<rect x="${b[0] + 4}" y="${b[1] + 4}" width="${b[2] - 8}" height="${b[3] - 8}" rx="10" fill="#f8f6f0" stroke="#ddd5c3"/>`);
+  s += st(170, 0, 40, 520) + st(360, 0, 44, 520) + st(0, 150, 560, 40) + st(0, 340, 560, 40);
+  s += lab('Palmer St', 190, 75, 1) + lab('Palmer St', 190, 455, 1) + lab('Miller St', 382, 75, 1) + lab('Miller St', 382, 265, 1) + lab('Miller St', 382, 455, 1);
+  s += lab('Amherst St', 86, 171) + lab('Amherst St', 285, 171) + lab('Amherst St', 482, 171) + lab('Ernest St', 86, 361) + lab('Ernest St', 285, 361) + lab('Ernest St', 482, 361);
+  s += `<text x="40" y="40" font-size="22" font-weight="800" fill="#1E5B45">N ↑</text>`;
+  PLACES.forEach(p => {
+    const [id, name, em, x, y, w, h] = p; const words = name.split(' ');
+    const fill = id === 'park' ? '#cfe6d6' : id === 'hall' ? '#fdf1d6' : '#ffffff', stroke = id === 'park' ? '#1E5B45' : id === 'hall' ? '#D4A12A' : '#4F7F6A';
+    const cy = y + h / 2;
+    const ey = words.length > 1 ? cy - 20 : cy - 12;
+    s += `<g class="pl" data-p="${id}" role="button" aria-label="${name}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="10" fill="${fill}" stroke="${stroke}" stroke-width="2.5"/>
+      <text x="${x + w / 2}" y="${ey}" text-anchor="middle" dominant-baseline="middle" font-size="28">${em}</text>
+      ${words.map((wd, k) => `<text x="${x + w / 2}" y="${ey + 28 + k * 19}" text-anchor="middle" dominant-baseline="middle" font-size="${wd.length > 6 ? 15 : 17}" font-weight="700" fill="#26302C">${wd}</text>`).join('')}</g>`;
+  });
+  if (nav) s += `<g aria-label="You are here"><circle cx="352" cy="232" r="17" fill="#e5332a" stroke="#fff" stroke-width="3"/><text x="352" y="233" text-anchor="middle" dominant-baseline="middle" font-size="20" fill="#fff">★</text></g>`;
+  return s + '</svg>';
+}
+function item(fresh) {
+  const { a, st } = cur; const it = a.items[st.i]; cur.answered = false; cur.placed = []; cur.spotFound = null;
+  const top = $('#ptop'), pq = $('#pq');
+  if (a.map) {
+    if (fresh || !top.querySelector('svg')) top.innerHTML = `<p class="note" style="margin:0 0 6px">↔ Swipe the map to see all of it.</p><div class="mapwrap" id="mw"><button class="zoombtn" id="zm">🔍 Bigger map</button>${mapSvg(a.map === 'nav')}</div>
+      <p class="note">Practice map. Not to scale. The streets are real. The places are for practice.${a.map === 'nav' ? ' ★ = You are here (the bus stop).' : ''}</p>`;
+    $('#mw').classList.toggle('tapmode', it.t === 'tap' || it.t === 'route');
+    top.querySelectorAll('.pl').forEach(g => g.classList.remove('hitok', 'hitno', 'done'));
+    $('#zm').onclick = () => { const m = $('#mw'); m.classList.toggle('zoom'); $('#zm').textContent = m.classList.contains('zoom') ? '🔍 Smaller map' : '🔍 Bigger map'; };
+    top.onclick = e => { const g = e.target.closest('.pl'); const tt = cur.a.items[cur.st.i].t; if (g && (tt === 'tap' || tt === 'route') && !cur.answered) tapPlace(g); };
+  } else {
+    const html = it.top || a.top || `<div class="wordcard"><div class="we">${a.icon}</div><div class="ww">${esc(a.name)}</div><div class="wn">Question ${st.i + 1} of ${a.items.length}</div></div>`;
+    if (fresh || it.top || !a.top || top.dataset.app !== a.id) { top.innerHTML = html; top.dataset.app = a.id; top.scrollTop = 0; }
+  }
+  const dots = a.items.map((_, k) => `<i class="${k < st.i ? 'ok' : k === st.i ? 'cur' : ''}"></i>`).join('');
+  let ctl = '';
+  if (it.t === 'mc') ctl = it.fill ? `<div class="fillrow">${it.opts.map((o, k) => `<button class="opt" data-k="${k}"><span class="lt">${'abc'[k]}</span><span>${esc(o)}</span></button>`).join('')}</div>`
+    : it.opts.map((o, k) => `<button class="opt${a.optStyle === 'sticker' ? ' stk' : ''}" data-k="${k}"><span class="lt">${'abc'[k]}</span><span>${esc(o)}</span></button>`).join('');
+  if (it.t === 'swipe') ctl = `<div class="swbtns"><button class="opt l" data-v="0">${esc(it.labels[0])}</button><button class="opt r" data-v="1">${esc(it.labels[1])}</button></div>`;
+  if (it.t === 'pairs') ctl = `<div class="pairs"><div class="pcol lft">${it.L.map((x, k) => `<button class="pbtn" data-pl="${k}">${esc(x)}</button>`).join('')}</div><div class="pcol">${it.showR.map(k => `<button class="pbtn" data-pr="${k}">${esc(it.R[k])}</button>`).join('')}</div></div>`;
+  if (it.t === 'sort') ctl = `<div class="sortcard" id="scard"></div><div class="bucks">${it.buckets.map((b, k) => `<button class="opt" data-b="${k}">${esc(b)}</button>`).join('')}</div><div class="bins">${it.buckets.map((b, k) => `<div class="bin" id="bin${k}"><b>${esc(b)}</b></div>`).join('')}</div>`;
+  if (it.t === 'spot') ctl = `<div class="words">${it.words.map((w, k) => `<button class="opt" data-w="${k}">${esc(w)}</button>`).join('')}</div><div id="fix"></div>`;
+  if (it.t === 'spell') ctl = `<div class="slots" id="slots">${it.word.split('').map(() => '<span class="slot"></span>').join('')}</div><div class="tiles">${it.tiles.map((x, k) => `<button class="tile" data-t="${k}">${x}</button>`).join('')}</div><div class="two"><button class="btn alt" id="bk">⌫ Back</button><button class="btn alt" id="clr">Clear</button></div>`;
+  if (it.t === 'dial') ctl = `<div class="dial"><div class="dialv" id="dv"></div></div><div class="dial">${it.kind === 'time' ? '<button class="dbtn" data-d="-10">−10</button><button class="dbtn" data-d="-1">−1</button>' : '<button class="dbtn" data-d="-1">−</button>'}${it.kind === 'time' ? '<button class="dbtn" data-d="1">+1</button><button class="dbtn" data-d="10">+10</button>' : '<button class="dbtn" data-d="1">+</button>'}</div><div class="dunit">${it.kind === 'time' ? 'minutes' : it.unit || ''}</div><button class="btn" id="dchk">Check</button>`;
+  if (it.t === 'route') ctl = `<div class="tapnote">👆 Tap the ${it.seq.length} places on the map, in order.</div><div class="rsteps" id="rs">${it.seq.map((_, k) => `<span>${k + 1} ☐</span>`).join('')}</div>`;
+  if (it.t === 'rwd') ctl = `<div class="row3">${[['R', 'Right'], ['W', 'Wrong'], ['DS', "Doesn't say"]].map(x => `<button class="opt" data-v="${x[0]}">${x[1]}</button>`).join('')}</div>`;
+  if (it.t === 'cat') ctl = `<div class="row3">${[['S', 'Community service'], ['R', 'Recreation activity'], ['B', 'Business']].map(x => `<button class="opt" data-v="${x[0]}">${x[1]}</button>`).join('')}</div>`;
+  if (it.t === 'syl') ctl = `<div class="syl">${it.s.map((x, k) => `<button class="opt" data-k="${k}">${esc(x)}</button>`).join('')}</div>`;
+  if (it.t === 'order') ctl = `<div class="line" id="line"><div class="ph">Tap the parts below.</div></div><div class="bank" id="bank">${it.show.map(k => `<button class="chip" data-c="${k}">${esc(it.chips[k])}</button>`).join('')}</div>
+    <div class="two"><button class="btn alt" id="clr">Clear</button><button class="btn" id="chk">Check</button></div>`;
+  if (it.t === 'tap') ctl = `<div class="tapnote">👆 Tap the place on the map.</div>`;
+  pq.innerHTML = `<div class="qh"><span>${cur.practice ? 'Practice · ' : ''}Question ${st.i + 1} of ${a.items.length}</span><span class="qd">${dots}</span></div>
+    <div class="prompt">${it.fill ? esc(it.q).replace('___', '<span class="qgap" id="qgap">?</span>') : esc(it.q)}</div><div id="ctl">${ctl}</div><div id="fb"></div><div id="nx"></div>`;
+  pq.scrollTop = 0;
+  pq.querySelectorAll('[data-k],[data-v]').forEach(b => b.onclick = () => choose(b));
+  if (it.t === 'pairs') { cur.sel = null; cur.got = 0;
+    pq.querySelectorAll('[data-pl]').forEach(b => b.onclick = () => { if (b.disabled) return; pq.querySelectorAll('[data-pl]').forEach(x => x.classList.remove('sel')); b.classList.add('sel'); cur.sel = +b.dataset.pl; });
+    pq.querySelectorAll('[data-pr]').forEach(b => b.onclick = () => pairTap(b)); }
+  if (it.t === 'sort') { cur.si = 0; $('#scard').textContent = it.cards[0][0]; pq.querySelectorAll('[data-b]').forEach(b => b.onclick = () => sortTap(+b.dataset.b)); }
+  if (it.t === 'spot') pq.querySelectorAll('[data-w]').forEach(b => b.onclick = () => spotTap(b));
+  if (it.t === 'spell') { cur.sp = [];
+    pq.querySelectorAll('[data-t]').forEach(b => b.onclick = () => spellTap(b));
+    $('#bk').onclick = () => { if (cur.answered || !cur.sp.length) return; const k = cur.sp.pop(); pq.querySelector(`[data-t="${k}"]`).classList.remove('used'); drawSlots(); };
+    $('#clr').onclick = () => { if (cur.answered) return; cur.sp = []; pq.querySelectorAll('[data-t]').forEach(b => b.classList.remove('used')); drawSlots(); }; }
+  if (it.t === 'dial') { cur.dv = it.start; drawDial();
+    pq.querySelectorAll('[data-d]').forEach(b => b.onclick = () => { if (cur.answered) return; const d = +b.dataset.d; const stp = it.kind === 'time' ? 1 : it.step;
+      let v = Math.round((cur.dv + d * stp) * 100) / 100; if (it.kind === 'time') v = Math.max(11 * 60, Math.min(15 * 60, v)); else v = Math.max(it.min, Math.min(it.max, v)); cur.dv = v; drawDial(); });
+    $('#dchk').onclick = dialCheck; }
+  if (it.t === 'route') cur.ri = 0;
+  if (it.t === 'order') {
+    pq.querySelectorAll('[data-c]').forEach(b => b.onclick = () => { if (cur.answered) return; cur.placed.push(+b.dataset.c); b.classList.add('used'); drawLine(); });
+    $('#clr').onclick = () => { if (cur.answered) return; cur.placed = []; pq.querySelectorAll('[data-c]').forEach(b => b.classList.remove('used')); drawLine(); };
+    $('#chk').onclick = checkOrder;
+  }
+}
+function drawLine() {
+  const it = cur.a.items[cur.st.i];
+  $('#line').innerHTML = cur.placed.length ? cur.placed.map(k => `<div class="chip">${esc(it.chips[k])}</div>`).join('') : '<div class="ph">Tap the parts below.</div>';
+}
+function fmtDial(it, v) { if (it.kind === 'time') { let h = Math.floor(v / 60) % 12; if (h === 0) h = 12; return h + ':' + String(v % 60).padStart(2, '0') + (v >= 720 ? ' pm' : ' am'); } return it.kind === 'money' ? '$' + v.toFixed(2) : String(v); }
+function drawDial() { const it = cur.a.items[cur.st.i]; $('#dv').textContent = fmtDial(it, cur.dv); }
+function dialCheck() {
+  if (cur.answered) return; const it = cur.a.items[cur.st.i];
+  if (Math.abs(cur.dv - it.ans) < 0.001) { right(); return; }
+  const low = cur.dv < it.ans;
+  wrong(null, it.kind === 'time' ? (low ? 'Too early. Make it later.' : 'Too late. Make it earlier.') : (low ? 'Too low. Try a bigger number.' : 'Too high. Try a smaller number.'));
+}
+function pairTap(b) {
+  if (cur.answered || b.disabled) return;
+  if (cur.sel === null) { toast('Tap an expression on the left first.'); return; }
+  const it = cur.a.items[cur.st.i]; const l = document.querySelector(`[data-pl="${cur.sel}"]`);
+  if (+b.dataset.pr === cur.sel) {
+    [l, b].forEach(x => { x.classList.remove('sel'); x.classList.add('right'); x.disabled = true; }); cur.sel = null; cur.got++;
+    $('#fb').innerHTML = ''; if (cur.got === it.L.length) right();
+  } else {
+    [l, b].forEach(x => x.classList.add('wrong')); setTimeout(() => [l, b].forEach(x => x.classList.remove('wrong')), 700);
+    wrong(null, 'That is not a pair. Try again.');
+  }
+}
+function sortTap(k) {
+  if (cur.answered) return; const it = cur.a.items[cur.st.i]; const c = it.cards[cur.si];
+  if (c[1] === k) {
+    const sp = document.createElement('span'); sp.textContent = c[0]; $('#bin' + k).appendChild(sp); cur.si++; $('#fb').innerHTML = '';
+    if (cur.si === it.cards.length) { $('#scard').textContent = '✓ All sorted!'; right(); } else $('#scard').textContent = it.cards[cur.si][0];
+  } else { const sc = $('#scard'); sc.classList.add('wrong'); setTimeout(() => sc.classList.remove('wrong'), 700); wrong(null, 'Not that one. Try again.'); }
+}
+function spotTap(b) {
+  if (cur.answered || cur.spotFound) return; const it = cur.a.items[cur.st.i];
+  if (+b.dataset.w === it.bad) {
+    b.classList.add('found'); cur.spotFound = b; $('#fb').innerHTML = '';
+    $('#fix').innerHTML = `<div class="fixq">✓ Found it! ${esc(it.fixq)}</div>${it.fixOpts.map((o, k) => `<button class="opt" data-f="${k}"><span class="lt">${'abc'[k]}</span><span>${esc(o)}</span></button>`).join('')}`;
+    document.querySelectorAll('[data-f]').forEach(f => f.onclick = () => {
+      if (cur.answered || f.disabled) return;
+      if (+f.dataset.f === it.fixAns) { f.classList.add('right'); cur.spotFound.textContent = it.fixOpts[it.fixAns]; cur.spotFound.classList.add('fixed'); right(); }
+      else { f.classList.add('wrong'); f.disabled = true; wrong(null, 'Not that one. Try again.'); }
+    });
+  } else { b.classList.add('wrong'); setTimeout(() => b.classList.remove('wrong'), 700); wrong(null, 'That word is OK. Look again.'); }
+}
+function drawSlots() { const it = cur.a.items[cur.st.i]; document.querySelectorAll('#slots .slot').forEach((s, i) => s.textContent = cur.sp[i] !== undefined ? it.tiles[cur.sp[i]] : ''); }
+function spellTap(b) {
+  if (cur.answered || b.classList.contains('used')) return; const it = cur.a.items[cur.st.i];
+  cur.sp.push(+b.dataset.t); b.classList.add('used'); drawSlots();
+  if (cur.sp.length === it.word.length) {
+    const w = cur.sp.map(k => it.tiles[k]).join('');
+    if (w === it.word) { $('#slots').classList.add('ok'); right(); }
+    else { $('#slots').classList.add('no'); wrong(null, it.hint || 'Try again.'); setTimeout(() => { $('#slots').classList.remove('no'); cur.sp = []; document.querySelectorAll('[data-t]').forEach(x => x.classList.remove('used')); drawSlots(); }, 900); }
+  }
+}
+function choose(b) {
+  if (cur.answered || b.disabled) return;
+  const it = cur.a.items[cur.st.i];
+  const ok = it.t === 'mc' ? +b.dataset.k === it.ans : it.t === 'swipe' ? +b.dataset.v === it.a : (it.t === 'rwd' || it.t === 'cat') ? b.dataset.v === it.a : +b.dataset.k === it.a;
+  if (ok) { b.classList.add('right');
+    if (it.fill) { const g = $('#qgap'); if (g) { g.textContent = it.opts[it.ans]; g.classList.add('filled'); } }
+    if (it.t === 'swipe') { const c = $('#ptop').firstElementChild; if (c && !reduce) c.classList.add(it.a ? 'swr' : 'swl'); }
+    right(); }
+  else { b.classList.add('wrong'); b.disabled = true; wrong(); }
+}
+function tapPlace(g) {
+  const it = cur.a.items[cur.st.i];
+  if (it.t === 'route') {
+    if (g.classList.contains('done')) return;
+    if (g.dataset.p === it.seq[cur.ri]) { g.classList.add('done'); const sp = document.querySelectorAll('#rs span')[cur.ri]; sp.textContent = (cur.ri + 1) + ' ✓ ' + g.getAttribute('aria-label'); sp.classList.add('ok'); cur.ri++; $('#fb').innerHTML = ''; if (cur.ri === it.seq.length) right(); }
+    else { g.classList.add('hitno'); setTimeout(() => g.classList.remove('hitno'), 900); wrong(g.getAttribute('aria-label')); }
+    return;
+  }
+  if (g.dataset.p === it.a) { g.classList.add('hitok'); right(); }
+  else { g.classList.add('hitno'); setTimeout(() => g.classList.remove('hitno'), 900); wrong(g.getAttribute('aria-label')); }
+}
+function checkOrder() {
+  if (cur.answered) return;
+  const it = cur.a.items[cur.st.i];
+  if (cur.placed.length < it.chips.length) { toast('Tap all the parts first.'); return; }
+  if (cur.placed.every((k, i) => k === i)) right();
+  else { wrong(); cur.placed = []; document.querySelectorAll('#bank [data-c]').forEach(b => b.classList.remove('used')); drawLine(); }
+}
+function wrong(tapped, msg) {
+  const it = cur.a.items[cur.st.i]; cur.st.w++; if (!cur.practice) save();
+  $('#fb').innerHTML = `<div class="fb no"><b>✗ ${msg ? esc(msg) : 'Not quite. Try again.'}</b>${tapped ? 'That is the ' + esc(tapped.toLowerCase()) + '. ' : ''}${it.hint ? 'Hint: ' + esc(it.hint) : ''}</div>`;
+}
+function right() {
+  const { a, st } = cur; const it = a.items[st.i];
+  cur.answered = true;
+  st.first[st.i] = st.w === 0; st.w = 0; st.i++;
+  if (!cur.practice) save();
+  document.querySelectorAll('#ctl button').forEach(b => b.disabled = true);
+  $('#fb').innerHTML = `<div class="fb ok"><b>✓ Right!</b>${esc(it.why)}</div>`;
+  const last = st.i >= a.items.length;
+  $('#nx').innerHTML = `<button class="btn ${last ? 'green' : ''}" id="next">${last ? 'Finish ' + esc(a.name) : 'Next'}</button>`;
+  $('#next').onclick = () => last ? finishApp() : item(false);
+  const pq = $('#pq'); setTimeout(() => { pq.scrollTo ? pq.scrollTo({ top: pq.scrollHeight, behavior: reduce ? 'auto' : 'smooth' }) : (pq.scrollTop = pq.scrollHeight); }, 30);
+  document.querySelectorAll('.qd i')[st.i - 1].className = 'ok';
+}
+function finishApp() {
+  const { a, st, practice } = cur;
+  const score = st.first.filter(Boolean).length;
+  if (practice) {
+    sheet(`<div class="big">${a.icon}</div><h2>Practice finished</h2><p>${score} of ${a.items.length} right the first time.</p><button class="btn" id="hm">Back to Home</button>`, e => { if (e.target.closest('#hm')) home(); });
+    return;
+  }
+  st.done = true; st.score = score; save(); setTime();
+  const n = doneCount(); const all = n === APPS.length;
+  sheet(`<div class="big">✅</div><h2>${esc(a.name)} done!</h2>
+    <p>⭐ ${score} of ${a.items.length} right the first time.</p>
+    <p>🕐 +5 minutes. It's now <b>${clockAP()}</b>.</p>
+    ${all ? `<p>${esc(CFG.allDone)}</p><button class="btn green" id="fin">${CFG.runBtn}</button>` : `<p>Next app: ${APPS[n].icon} <b>${esc(APPS[n].name)}</b></p><button class="btn" id="hm">Back to Home</button>`}`, e => {
+    if (e.target.closest('#hm')) home();
+    if (e.target.closest('#fin')) finale();
+  });
+}
+
+/* ---------- finale ---------- */
+function finale() {
+  closeSheet(); light(false); setTime();
+  const total = APPS.reduce((n, a) => n + ((S.apps[a.id] || {}).score || 0), 0);
+  const pct = total / TOTAL; const stars = pct >= .9 ? 3 : pct >= .7 ? 2 : 1;
+  scr.className = 'scr final wall';
+  scr.innerHTML = `<div class="card"><div class="stars">${'⭐'.repeat(stars)}</div>
+    <p><b>It's ${clockAP()}.</b> ${CFG.finale[0]}</p>
+    ${CFG.finale.slice(1).map(f => `<p class="say">${f[0]} <b>${f[1]}:</b> ${esc(f[2])}</p>`).join('')}
+    <div class="score">${total} of ${TOTAL}</div><p style="text-align:center">right the first time</p>
+    <div class="slist">${APPS.map(a => `<span>${a.icon} ${esc(a.name)}</span><b>${(S.apps[a.id] || {}).score || 0}/${a.items.length}</b>`).join('')}</div>
+    <p>Merry Christmas! 🎄 Practise any app again from the Home Screen.</p>
+    <button class="btn" id="hm">Back to Home</button><button class="btn alt" id="pa">Play again</button></div>`;
+  $('#hm').onclick = () => home();
+  $('#pa').onclick = () => twoTap($('#pa'), 'Tap again to start again', restart);
+  if (!reduce) { const em = ['🎄', '⭐', '🎁', '🎅', '❄️', '🦌']; for (let k = 0; k < 36; k++) { const c = document.createElement('span'); c.className = 'confetti'; c.textContent = em[k % em.length]; c.style.left = Math.random() * 100 + '%'; c.style.animationDuration = 3 + Math.random() * 3 + 's'; c.style.animationDelay = Math.random() * 2 + 's'; phone.appendChild(c); setTimeout(() => c.remove(), 8500); } }
+}
+
+setSize(); setTime(); intro();
+</script>
+</body>
+</html>
